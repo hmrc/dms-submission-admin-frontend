@@ -20,7 +20,6 @@ import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
-import models.Enumerable
 
 object MappingsSpec {
 
@@ -31,15 +30,10 @@ object MappingsSpec {
   object Foo {
 
     val values: Set[Foo] = Set(Bar, Baz)
-
-    implicit val fooEnumerable: Enumerable[Foo] =
-      Enumerable(values.toSeq.map(v => v.toString -> v): _*)
   }
 }
 
 class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mappings {
-
-  import MappingsSpec._
 
   "text" - {
 
@@ -143,28 +137,6 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     "must unbind a valid value" in {
       val result = testForm.fill(123)
       result.apply("value").value.value mustEqual "123"
-    }
-  }
-
-  "enumerable" - {
-
-    val testForm = Form(
-      "value" -> enumerable[Foo]()
-    )
-
-    "must bind a valid option" in {
-      val result = testForm.bind(Map("value" -> "Bar"))
-      result.get mustEqual Bar
-    }
-
-    "must not bind an invalid option" in {
-      val result = testForm.bind(Map("value" -> "Not Bar"))
-      result.errors must contain(FormError("value", "error.invalid"))
-    }
-
-    "must not bind an empty map" in {
-      val result = testForm.bind(Map.empty[String, String])
-      result.errors must contain(FormError("value", "error.required"))
     }
   }
 }

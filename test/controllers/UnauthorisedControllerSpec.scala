@@ -16,28 +16,34 @@
 
 package controllers
 
-import base.SpecBase
+import org.scalatest.OptionValues
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import play.api.i18n.{Messages, MessagesApi}
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.UnauthorisedView
 
-class UnauthorisedControllerSpec extends SpecBase {
+class UnauthorisedControllerSpec extends AnyFreeSpec with Matchers with ScalaFutures with OptionValues {
+
+  private val app = new GuiceApplicationBuilder().build()
+  private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   "Unauthorised Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
+      running(app) {
         val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad.url)
 
-        val result = route(application, request).value
+        val result = route(app, request).value
 
-        val view = application.injector.instanceOf[UnauthorisedView]
+        val view = app.injector.instanceOf[UnauthorisedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view()(request, implicitly).toString
       }
     }
   }
