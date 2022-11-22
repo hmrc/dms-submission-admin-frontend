@@ -16,37 +16,84 @@
 
 package controllers
 
-import org.scalatest.OptionValues
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.when
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{Messages, MessagesApi}
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, IAAction, Resource, ResourceLocation, ResourceType, Retrieval}
+import uk.gov.hmrc.internalauth.client.Predicate.Permission
+import uk.gov.hmrc.internalauth.client.Retrieval.Username
+import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import views.html.SubmissionsView
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionsControllerSpec
   extends AnyFreeSpec
     with Matchers
     with ScalaFutures
-    with OptionValues {
+    with OptionValues
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
-  private val app = GuiceApplicationBuilder().build()
+  private val serviceName = "service"
+
+  private val mockStubBehaviour = mock[StubBehaviour]
+  private val stubFrontendAuthComponents = FrontendAuthComponentsStub(mockStubBehaviour)(Helpers.stubControllerComponents(), implicitly)
+
+  private val app = GuiceApplicationBuilder()
+    .overrides(bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents))
+    .build()
 
   private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   "onPageLoad" - {
 
-    "must return OK and the correct view" in {
+    "must return OK and the correct view when the user is authorised" in {
 
-      val request = FakeRequest(GET, routes.SubmissionsController.onPageLoad("service").url)
+      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
+      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
+
+      val request =
+        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
+          .withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view("service")(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName)(request, implicitly).toString
+    }
+
+    "must redirect to login when the user is not authenticated" in {
+
+      val request = FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url) // No authToken in session
+
+      val result = route(app, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions"
+    }
+
+    "must fail when the user is not authorised" in {
+
+      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
+      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.failed(new Exception("foo")))
+
+      val request =
+        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
+          .withSession("authToken" -> "Token some-token")
+
+      route(app, request).value.failed.futureValue
     }
   }
 }

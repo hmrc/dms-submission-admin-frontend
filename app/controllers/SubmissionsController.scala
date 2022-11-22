@@ -18,6 +18,8 @@ package controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.internalauth.client.Predicate.Permission
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, IAAction, Resource, ResourceLocation, ResourceType, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmissionsView
 
@@ -25,10 +27,27 @@ import javax.inject.Inject
 
 class SubmissionsController @Inject()(
                                        val controllerComponents: MessagesControllerComponents,
+                                       auth: FrontendAuthComponents,
                                        view: SubmissionsView
                                      ) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(service: String): Action[AnyContent] = Action { implicit request =>
+
+  private val read = IAAction("READ")
+
+  private val authorised = (service: String, action: IAAction) =>
+    auth.authorizedAction(
+      continueUrl = routes.SubmissionsController.onPageLoad(service),
+      predicate = Permission(
+        Resource(
+          ResourceType("dms-submission"),
+          ResourceLocation(service)
+        ),
+        action
+      ),
+      retrieval = Retrieval.username
+    )
+
+  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read) { implicit request =>
     Ok(view(service))
   }
 }
