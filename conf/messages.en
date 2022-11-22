@@ -41,3 +41,6 @@ index.guidance = Welcome to your new frontend. Please see the README file for a 
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+submissions.title = Submissions for {0}
+submissions.heading = Submissions for {0}
