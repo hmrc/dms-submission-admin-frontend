@@ -1,7 +1,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlMatching}
-import models.SubmissionSummary
+import models.{DailySummary, DailySummaryResponse, SubmissionSummary}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import util.WireMockHelper
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 
 class DmsSubmissionConnectorSpec
   extends AnyFreeSpec
@@ -70,6 +70,44 @@ class DmsSubmissionConnectorSpec
       )
 
       connector.list(serviceName)(hc).failed.futureValue
+    }
+  }
+
+  "dailySummaries" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val url = s"/dms-submission/$serviceName/submissions/summaries"
+
+    "must return a list of summaries when the server returns some" in {
+
+      val summaries = List(
+        DailySummary(LocalDate.of(2022, 1, 2), 1, 2, 3, 4, 5),
+        DailySummary(LocalDate.of(2022, 1, 1), 6, 7, 8, 9, 0)
+      )
+
+      val json = Json.obj(
+        "summaries" -> summaries
+      )
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(ok(json.toString))
+      )
+
+      val result = connector.dailySummaries(serviceName)(hc).futureValue
+
+      result mustEqual DailySummaryResponse(summaries)
+    }
+
+    "must return a failed future when the server returns an error" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.dailySummaries(serviceName)(hc).failed.futureValue
     }
   }
 }

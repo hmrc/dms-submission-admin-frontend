@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.SubmissionSummary
+import models.{DailySummaryResponse, SubmissionSummary}
 import play.api.Configuration
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -37,4 +37,9 @@ class DmsSubmissionConnector @Inject()(
     httpClient
       .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions")
       .execute[Seq[SubmissionSummary]]
+
+  def dailySummaries(serviceName: String)(implicit hc: HeaderCarrier): Future[DailySummaryResponse] =
+    httpClient
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summaries")
+      .execute[DailySummaryResponse]
 }
