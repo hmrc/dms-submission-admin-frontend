@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.SubmissionSummary
+import models.{DailySummary, DailySummaryResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -36,13 +36,13 @@ import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client.Retrieval.Username
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import views.html.SubmissionsView
+import views.html.DailySummariesView
 
-import java.time.Instant
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubmissionsControllerSpec
+class DailySummaryControllerSpec
   extends AnyFreeSpec
     with Matchers
     with ScalaFutures
@@ -73,51 +73,36 @@ class SubmissionsControllerSpec
     super.beforeEach()
   }
 
-  "onPageLoad" - {
+  "dailySummaries" - {
 
-    "must return OK and the correct view when the user is authorised and there are some submissions for this service" in {
-
-      val request =
-        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
-          .withSession("authToken" -> "Token some-token")
-
-      val submissions = List(SubmissionSummary("id", "Processed", None, Instant.now))
-      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
-      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName))(any())).thenReturn(Future.successful(submissions))
-
-      val result = route(app, request).value
-      val view = app.injector.instanceOf[SubmissionsView]
-
-      status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, submissions)(request, implicitly).toString
-    }
-
-    "must return OK and the correct view when the user is authorised and there are no submissions for this service" in {
+    "must return OK and the view when the server returns some data" in {
 
       val request =
-        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
+        FakeRequest(GET, routes.DailySummaryController.dailySummaries(serviceName).url)
           .withSession("authToken" -> "Token some-token")
 
+      val dailySummaryResponse = DailySummaryResponse(
+        summaries = List(DailySummary(LocalDate.now, 1, 2, 3, 4, 5))
+      )
       val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName))(any())).thenReturn(Future.successful(Nil))
+      when(mockDmsSubmissionConnector.dailySummaries(eqTo(serviceName))(any())).thenReturn(Future.successful(dailySummaryResponse))
 
       val result = route(app, request).value
-      val view = app.injector.instanceOf[SubmissionsView]
+      val view = app.injector.instanceOf[DailySummariesView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, Nil)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, dailySummaryResponse)(request, implicitly).toString
     }
 
     "must redirect to login when the user is not authenticated" in {
 
-      val request = FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url) // No authToken in session
+      val request = FakeRequest(GET, routes.DailySummaryController.dailySummaries(serviceName).url) // No authToken in session
 
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions"
+      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fsummaries"
     }
 
     "must fail when the user is not authorised" in {
@@ -126,7 +111,7 @@ class SubmissionsControllerSpec
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.failed(new Exception("foo")))
 
       val request =
-        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
+        FakeRequest(GET, routes.DailySummaryController.dailySummaries(serviceName).url)
           .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue
