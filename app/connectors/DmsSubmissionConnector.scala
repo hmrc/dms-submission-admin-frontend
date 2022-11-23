@@ -35,6 +35,6 @@ class DmsSubmissionConnector @Inject()(
 
   def list(serviceName: String)(implicit hc: HeaderCarrier): Future[Seq[SubmissionSummary]] =
     httpClient
-      .get(url"${dmsSubmissionService.baseUrl}/$serviceName/submissions")
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions")
       .execute[Seq[SubmissionSummary]]
 }

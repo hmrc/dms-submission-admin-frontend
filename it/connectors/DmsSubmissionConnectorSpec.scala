@@ -31,7 +31,7 @@ class DmsSubmissionConnectorSpec
 
     val hc = HeaderCarrier()
     val serviceName = "service-name"
-    val url = s"/$serviceName/submissions"
+    val url = s"/dms-submission/$serviceName/submissions"
 
     "must return a list of submissions when the server returns OK and some submissions" in {
 
