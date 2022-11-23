@@ -44,3 +44,4 @@ unauthorised.heading = You can’t access this service with this account
 
 submissions.title = Submissions for {0}
 submissions.heading = Submissions for {0}
+submissions.none = There are no submissions for this service.

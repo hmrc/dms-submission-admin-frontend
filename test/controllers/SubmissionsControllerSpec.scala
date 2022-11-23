@@ -16,26 +16,31 @@
 
 package controllers
 
+import connectors.DmsSubmissionConnector
+import models.SubmissionSummary
+import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, IAAction, Resource, ResourceLocation, ResourceType, Retrieval}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client.Retrieval.Username
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
+import uk.gov.hmrc.internalauth.client._
 import views.html.SubmissionsView
 
-import scala.concurrent.Future
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class SubmissionsControllerSpec
   extends AnyFreeSpec
@@ -47,31 +52,62 @@ class SubmissionsControllerSpec
 
   private val serviceName = "service"
 
+  private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
   private val mockStubBehaviour = mock[StubBehaviour]
   private val stubFrontendAuthComponents = FrontendAuthComponentsStub(mockStubBehaviour)(Helpers.stubControllerComponents(), implicitly)
 
   private val app = GuiceApplicationBuilder()
-    .overrides(bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents))
+    .overrides(
+      bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents),
+      bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
+    )
     .build()
 
   private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
+  override protected def beforeEach(): Unit = {
+    Mockito.reset(
+      mockDmsSubmissionConnector,
+      mockStubBehaviour
+    )
+    super.beforeEach()
+  }
+
   "onPageLoad" - {
 
-    "must return OK and the correct view when the user is authorised" in {
-
-      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
-      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
+    "must return OK and the correct view when the user is authorised and there are some submissions for this service" in {
 
       val request =
         FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
           .withSession("authToken" -> "Token some-token")
 
+      val submissions = List(SubmissionSummary("id", "Processed", None, Instant.now))
+      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
+      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
+      when(mockDmsSubmissionConnector.list(eqTo(serviceName))(any())).thenReturn(Future.successful(submissions))
+
       val result = route(app, request).value
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, submissions)(request, implicitly).toString
+    }
+
+    "must return OK and the correct view when the user is authorised and there are no submissions for this service" in {
+
+      val request =
+        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
+          .withSession("authToken" -> "Token some-token")
+
+      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
+      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
+      when(mockDmsSubmissionConnector.list(eqTo(serviceName))(any())).thenReturn(Future.successful(Nil))
+
+      val result = route(app, request).value
+      val view = app.injector.instanceOf[SubmissionsView]
+
+      status(result) mustEqual OK
+      contentAsString(result) mustEqual view(serviceName, Nil)(request, implicitly).toString
     }
 
     "must redirect to login when the user is not authenticated" in {

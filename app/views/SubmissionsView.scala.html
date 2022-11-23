@@ -18,11 +18,19 @@
         layout: templates.Layout
 )
 
-@(service: String)(implicit request: Request[_], messages: Messages)
+@(service: String, submissions: Seq[SubmissionSummary])(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = titleNoForm(messages("submissions.title", service))
 ) {
 
     <h1 class="govuk-heading-xl">@messages("submissions.heading", service)</h1>
+
+    @if(submissions.nonEmpty) {
+        @submissions.map { submission =>
+          <p>@submission.id</p>
+        }
+    } else {
+        <p>@messages("submissions.none")</p>
+    }
 }

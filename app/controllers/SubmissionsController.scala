@@ -16,6 +16,7 @@
 
 package controllers
 
+import connectors.DmsSubmissionConnector
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
@@ -24,12 +25,14 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmissionsView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class SubmissionsController @Inject()(
                                        val controllerComponents: MessagesControllerComponents,
                                        auth: FrontendAuthComponents,
-                                       view: SubmissionsView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                       view: SubmissionsView,
+                                       connector: DmsSubmissionConnector
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
   private val read = IAAction("READ")
@@ -47,7 +50,9 @@ class SubmissionsController @Inject()(
       retrieval = Retrieval.username
     )
 
-  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read) { implicit request =>
-    Ok(view(service))
+  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
+    connector.list(service).map { submissions =>
+      Ok(view(service, submissions))
+    }
   }
 }
