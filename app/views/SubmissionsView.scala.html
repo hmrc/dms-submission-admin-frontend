@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package config
+@this(
+        layout: templates.Layout
+)
 
-import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
+@(service: String, submissions: Seq[SubmissionSummary])(implicit request: Request[_], messages: Messages)
 
-@Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
+@layout(
+    pageTitle = titleNoForm(messages("submissions.title", service))
+) {
 
-  val host: String    = configuration.get[String]("host")
-  val appName: String = configuration.get[String]("appName")
+    <h1 class="govuk-heading-xl">@messages("submissions.heading", service)</h1>
 
-  val signOutUrl: String       = configuration.get[String]("urls.signOut")
+    @if(submissions.nonEmpty) {
+        @submissions.map { submission =>
+          <p>@submission.id</p>
+        }
+    } else {
+        <p>@messages("submissions.none")</p>
+    }
 }

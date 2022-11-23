@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package config
+package auth
 
-import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
+import uk.gov.hmrc.internalauth.client.~
 
-@Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
-
-  val host: String    = configuration.get[String]("host")
-  val appName: String = configuration.get[String]("appName")
-
-  val signOutUrl: String       = configuration.get[String]("urls.signOut")
+object Retrievals {
+  implicit class Ops[A](a: A) {
+    def ~[B](b: B): A ~ B = new ~(a, b)
+  }
 }

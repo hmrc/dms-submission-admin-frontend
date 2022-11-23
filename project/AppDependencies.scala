@@ -8,7 +8,8 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "play-frontend-hmrc"             % "3.33.0-play-28",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping"  % "1.12.0-play-28",
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"     % "7.12.0",
-    "uk.gov.hmrc"       %% "play-language"                  % "5.4.0-play-28"
+    "uk.gov.hmrc"       %% "play-language"                  % "5.4.0-play-28",
+    "uk.gov.hmrc"       %% "internal-auth-client-play-28"   % "1.2.0"
   )
 
   val test = Seq(
@@ -21,8 +22,9 @@ object AppDependencies {
     "com.typesafe.play"       %% "play-test"               % PlayVersion.current,
     "org.mockito"             %% "mockito-scala"           % "1.16.42",
     "org.scalacheck"          %% "scalacheck"              % "1.15.4",
-    "com.vladsch.flexmark"    %  "flexmark-all"            % "0.62.2"
-  ).map(_ % "test")
+    "com.vladsch.flexmark"    %  "flexmark-all"            % "0.62.2",
+    "com.github.tomakehurst"  %  "wiremock-standalone"     % "2.27.2"
+  ).map(_ % "test, it")
 
   def apply(): Seq[ModuleID] = compile ++ test
 }
