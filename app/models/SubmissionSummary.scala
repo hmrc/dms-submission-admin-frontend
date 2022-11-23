@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package config
+package models
 
-import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
+import play.api.libs.json.{Json, OFormat}
 
-@Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
+import java.time.Instant
 
-  val host: String    = configuration.get[String]("host")
-  val appName: String = configuration.get[String]("appName")
+final case class SubmissionSummary(
+                                    id: String,
+                                    status: String,
+                                    failureReason: Option[String],
+                                    lastUpdated: Instant
+                                  )
 
-  val signOutUrl: String       = configuration.get[String]("urls.signOut")
+object SubmissionSummary {
+
+  implicit lazy val format: OFormat[SubmissionSummary] = Json.format
 }
