@@ -27,19 +27,19 @@ import views.html.{DailySummariesView, SubmissionsView}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class SubmissionsController @Inject()(
-                                       val controllerComponents: MessagesControllerComponents,
-                                       auth: FrontendAuthComponents,
-                                       view: SubmissionsView,
-                                       connector: DmsSubmissionConnector
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class DailySummaryController @Inject()(
+                                        val controllerComponents: MessagesControllerComponents,
+                                        auth: FrontendAuthComponents,
+                                        view: DailySummariesView,
+                                        connector: DmsSubmissionConnector
+                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
   private val read = IAAction("READ")
 
   private val authorised = (service: String, action: IAAction) =>
     auth.authorizedAction(
-      continueUrl = routes.SubmissionsController.onPageLoad(service),
+      continueUrl = routes.DailySummaryController.dailySummaries(service),
       predicate = Permission(
         Resource(
           ResourceType("dms-submission"),
@@ -50,9 +50,9 @@ class SubmissionsController @Inject()(
       retrieval = Retrieval.username
     )
 
-  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
-    connector.list(service).map { submissions =>
-      Ok(view(service, submissions))
+  def dailySummaries(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
+    connector.dailySummaries(service).map { response =>
+      Ok(view(service, response))
     }
   }
 }
