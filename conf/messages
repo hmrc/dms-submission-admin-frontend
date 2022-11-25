@@ -45,3 +45,12 @@ unauthorised.heading = You can’t access this service with this account
 submissions.title = Submissions for {0}
 submissions.heading = Submissions for {0}
 submissions.none = There are no submissions for this service.
+
+dailySummaries.title = Daily submissions for {0}
+dailySummaries.heading = Daily submissions for {0}
+
+status.submitted = Submitted
+status.forwarded = Forwarded
+status.processed = Processed
+status.completed = Completed
+status.failed = Failed
