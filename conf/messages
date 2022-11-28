@@ -1,4 +1,4 @@
-service.name = dms-submission-admin-frontend
+service.name = DMS Submission Admin Frontend
 
 site.back = Back
 site.remove = Remove
@@ -35,9 +35,9 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = dms-submission-admin-frontend
-index.heading = dms-submission-admin-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.title = DMS Submission Admin Frontend
+index.heading = DMS Submission Admin Frontend
+index.p = Select which service you''d like to see the submissions for
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
@@ -45,6 +45,13 @@ unauthorised.heading = You can’t access this service with this account
 submissions.title = Submissions for {0}
 submissions.heading = Submissions for {0}
 submissions.none = There are no submissions for this service.
+submissions.filters = Filtered by
+submissions.filter.status = Status of {0}
+submissions.filter.created = Created on {0}
+submissions.id = Id
+submissions.status = Status
+submissions.lastUpdated = Last updated
+submissions.failureReason = Failure reason
 
 dailySummaries.title = Daily submissions for {0}
 dailySummaries.heading = Daily submissions for {0}

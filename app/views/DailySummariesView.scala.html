@@ -50,11 +50,31 @@
       @summaryResponse.summaries.map { summary =>
         <tr class="govuk-table__row">
           <th scope="row" class="govuk-table__header">@date(summary.date)</th>
-          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.submitted</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.forwarded</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.processed</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.completed</td>
-          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.failed</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.submitted == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Some(SubmissionItemStatus.Submitted), Some(summary.date))">@summary.submitted</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.forwarded == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Some(SubmissionItemStatus.Forwarded), Some(summary.date))">@summary.forwarded</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.processed == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Some(SubmissionItemStatus.Processed), Some(summary.date))">@summary.processed</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.completed == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Some(SubmissionItemStatus.Completed), Some(summary.date))">@summary.completed</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.failed == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Some(SubmissionItemStatus.Failed), Some(summary.date))">@summary.failed</a>
+            }
+          </td>
         </tr>
       }
       </tbody>

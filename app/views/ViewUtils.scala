@@ -19,7 +19,7 @@ package views
 import play.api.data.Form
 import play.api.i18n.Messages
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 
 object ViewUtils {
@@ -39,4 +39,7 @@ object ViewUtils {
 
   def date(d: LocalDate): String =
     d.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+
+  def dateTime(d: LocalDateTime): String =
+    d.format(DateTimeFormatter.ofPattern("d MMMM yyyy HH:MM:SS"))
 }

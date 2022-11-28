@@ -14,23 +14,77 @@
  * limitations under the License.
  *@
 
+@import java.time.LocalDate
+@import java.time.LocalDateTime
+@import java.time.ZoneOffset
+
 @this(
         layout: templates.Layout
 )
 
-@(service: String, submissions: Seq[SubmissionSummary])(implicit request: Request[_], messages: Messages)
+@(service: String, submissions: Seq[SubmissionSummary], status: Option[SubmissionItemStatus], created: Option[LocalDate])(implicit request: Request[_], messages: Messages)
 
-@layout(
-    pageTitle = titleNoForm(messages("submissions.title", service))
-) {
+  @pageLayout(contentBlock: Html) = {
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+      @contentBlock
+      </div>
+    </div>
+  }
 
-    <h1 class="govuk-heading-xl">@messages("submissions.heading", service)</h1>
+  @layout(
+    pageTitle = titleNoForm(messages("submissions.title", service)),
+    pageLayout = pageLayout
+  ) {
+
+    <h1 class="govuk-heading-l">
+      @messages("submissions.heading", service)
+    </h1>
+
+    @if(List(status, created).flatten.nonEmpty) {
+      <h2 class="govuk-heading-s">
+      @messages("submissions.filters")
+      </h2>
+      <ul class="govuk-list govuk-list--bullet">
+        @status.map { status =>
+          <li>@messages("submissions.filter.status", status)</li>
+        }
+        @created.map { created =>
+          <li>@messages("submissions.filter.created", date(created))</li>
+        }
+      </ul>
+    }
 
     @if(submissions.nonEmpty) {
-        @submissions.map { submission =>
-          <p>@submission.id</p>
-        }
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th class="govuk-table__header" scope="col">@messages("submissions.id")</th>
+            @if(created.isEmpty) {
+              <th class="govuk-table__header" scope="col">@messages("submissions.status")</th>
+            }
+            @if(submissions.exists(_.failureReason.isDefined)) {
+              <th class="govuk-table__header" scope="col">@messages("submissions.failureReason")</th>
+            }
+            <th class="govuk-table__header" scope="col">@messages("submissions.lastUpdated")</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          @submissions.map { submission =>
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header" scope="row"><code class="govuk-!-font-size-16">@submission.id</code></th>
+              @if(created.isEmpty) {
+                <th class="govuk-table__header" scope="row">@submission.status</th>
+              }
+              @if(submissions.exists(_.failureReason.isDefined)) {
+                <td class="govuk-table__cell">@submission.failureReason</td>
+              }
+              <td class="govuk-table__cell">@dateTime(LocalDateTime.ofInstant(submission.lastUpdated, ZoneOffset.UTC))</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     } else {
-        <p>@messages("submissions.none")</p>
+      <p class="govuk-body">@messages("submissions.none")</p>
     }
-}
+  }

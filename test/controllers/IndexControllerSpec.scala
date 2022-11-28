@@ -64,7 +64,8 @@ class IndexControllerSpec
 
     "must return OK and the correct view for a GET from an authorised user" in {
 
-      val retrieval = Username("username") ~ Set(Resource(ResourceType("dms-submission"), ResourceLocation("foo")))
+      val resource = Resource(ResourceType("dms-submission"), ResourceLocation("foo"))
+      val retrieval = Username("username") ~ Set(resource)
       when(mockStubBehaviour.stubAuth[Username ~ Set[Resource]](eqTo(None), any())).thenReturn(Future.successful(retrieval))
 
       val request =
@@ -77,7 +78,7 @@ class IndexControllerSpec
 
       status(result) mustEqual OK
 
-      contentAsString(result) mustEqual view()(request, implicitly).toString
+      contentAsString(result) mustEqual view(Set(resource))(request, implicitly).toString
     }
 
     "must redirect to internal-auth-frontend for an unauthenticated user" in {

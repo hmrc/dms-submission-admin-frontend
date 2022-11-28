@@ -90,7 +90,7 @@ class SubmissionsControllerSpec
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, submissions)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, submissions, None, None)(request, implicitly).toString
     }
 
     "must return OK and the correct view when the user is authorised and there are no submissions for this service" in {
@@ -107,7 +107,7 @@ class SubmissionsControllerSpec
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, Nil)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, Nil, None, None)(request, implicitly).toString
     }
 
     "must use the parameters from the url when calling dms submission" in {
@@ -130,8 +130,10 @@ class SubmissionsControllerSpec
       when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any())(any())).thenReturn(Future.successful(Nil))
 
       val result = route(app, request).value
+      val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
+      contentAsString(result) mustEqual view(serviceName, Nil, Some(itemStatus), Some(created))(request, implicitly).toString
       verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Some(itemStatus)), eqTo(Some(created)))(any())
     }
 
