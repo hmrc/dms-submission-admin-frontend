@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
     scalaVersion := "2.13.8",
     name := appName,
     RoutesKeys.routesImport ++= Seq(
+      "java.time.LocalDate",
       "models._",
       "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl"
     ),
@@ -32,7 +33,7 @@ lazy val root = (project in file("."))
       "controllers.routes._",
       "viewmodels.govuk.all._"
     ),
-    PlayKeys.playDefaultPort := 9000,
+    PlayKeys.playDefaultPort := 8224,
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*handlers.*;.*components.*;" +
       ".*Routes.*;.*viewmodels.govuk.*;",
     ScoverageKeys.coverageMinimumStmtTotal := 78,

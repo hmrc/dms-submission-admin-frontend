@@ -1,7 +1,7 @@
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlMatching}
-import models.{DailySummary, DailySummaryResponse, SubmissionSummary}
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, get, ok, serverError, urlMatching, urlPathMatching}
+import models.{DailySummary, DailySummaryResponse, SubmissionItemStatus, SubmissionSummary}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -48,6 +48,27 @@ class DmsSubmissionConnectorSpec
       val result = connector.list(serviceName)(hc).futureValue
 
       result mustEqual submissions
+    }
+
+    "must add filters to the request when passed" in {
+
+      val submissions = List(
+        SubmissionSummary("id1", "Submitted", None, Instant.now),
+        SubmissionSummary("id2", "Processed", None, Instant.now)
+      )
+
+      server.stubFor(
+        get(urlPathMatching(url))
+          .withQueryParam("status", equalTo("completed"))
+          .withQueryParam("created", equalTo("2022-02-01"))
+          .willReturn(ok(Json.toJson(submissions).toString))
+      )
+
+      connector.list(
+        serviceName,
+        status = Some(SubmissionItemStatus.Completed),
+        created = Some(LocalDate.of(2022, 2, 1))
+      )(hc).futureValue
     }
 
     "must return an empty list when the server returns OK and no submissions" in {

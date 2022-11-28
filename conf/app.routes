@@ -8,6 +8,5 @@ GET         /assets/*file                                controllers.Assets.vers
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
-GET         /:service/submissions                       controllers.SubmissionsController.onPageLoad(service: String)
-
+GET         /:service/submissions                       controllers.SubmissionsController.onPageLoad(service: String, status: Option[SubmissionItemStatus] ?= None, created: Option[LocalDate] ?= None)
 GET         /:service/submissions/summaries             controllers.DailySummaryController.dailySummaries(service: String)

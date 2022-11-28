@@ -20,10 +20,43 @@
 
 @(service: String, summaryResponse: DailySummaryResponse)(implicit request: Request[_], messages: Messages)
 
-@layout(
-    pageTitle = titleNoForm(messages("dailySummaries.title", service))
-) {
+  @pageLayout(contentBlock: Html) = {
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+      @contentBlock
+      </div>
+    </div>
+  }
+
+  @layout(
+    pageTitle = titleNoForm(messages("dailySummaries.title", service)),
+    pageLayout = pageLayout
+  ) {
 
     <h1 class="govuk-heading-xl">@messages("dailySummaries.heading", service)</h1>
 
-}
+    <table class="govuk-body govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Date</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("status.submitted")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("status.forwarded")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("status.processed")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("status.completed")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("status.failed")</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      @summaryResponse.summaries.map { summary =>
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header">@date(summary.date)</th>
+          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.submitted</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.forwarded</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.processed</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.completed</td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">@summary.failed</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }

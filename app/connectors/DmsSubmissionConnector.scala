@@ -17,13 +17,18 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, SubmissionSummary}
+import models.{DailySummaryResponse, SubmissionItemStatus, SubmissionSummary}
 import play.api.Configuration
+import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
+import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import models.javaLocalDateQueryStringBindable
+
+import java.net.URL
 
 @Singleton
 class DmsSubmissionConnector @Inject()(
@@ -33,10 +38,28 @@ class DmsSubmissionConnector @Inject()(
 
   private val dmsSubmissionService: Service = configuration.get[Service]("microservice.services.dms-submission")
 
-  def list(serviceName: String)(implicit hc: HeaderCarrier): Future[Seq[SubmissionSummary]] =
+  def list(
+            serviceName: String,
+            status: Option[SubmissionItemStatus] = None,
+            created: Option[LocalDate] = None
+          )(implicit hc: HeaderCarrier): Future[Seq[SubmissionSummary]] = {
+
+    val localDateBinder: QueryStringBindable[LocalDate] = implicitly
+    val statusBinder: QueryStringBindable[SubmissionItemStatus] = implicitly
+
+    val params = List(
+      status.map(statusBinder.unbind("status", _)),
+      created.map(localDateBinder.unbind("created", _))
+    ).flatten
+
+    val query = if (params.isEmpty) "" else {
+      params.mkString("?", "&", "")
+    }
+
     httpClient
-      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions")
+      .get(new URL(s"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions$query"))
       .execute[Seq[SubmissionSummary]]
+  }
 
   def dailySummaries(serviceName: String)(implicit hc: HeaderCarrier): Future[DailySummaryResponse] =
     httpClient

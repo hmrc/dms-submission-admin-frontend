@@ -20,9 +20,9 @@ import connectors.DmsSubmissionConnector
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, IAAction, Resource, ResourceLocation, ResourceType, Retrieval}
+import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{DailySummariesView, SubmissionsView}
+import views.html.DailySummariesView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
