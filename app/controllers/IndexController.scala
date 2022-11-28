@@ -35,7 +35,6 @@ class IndexController @Inject()(
       continueUrl = routes.IndexController.onPageLoad,
       retrieval = Retrieval.username ~ Retrieval.locations(Some(ResourceType("dms-submission")))
     ) { implicit request =>
-
-      Ok(view())
+      Ok(view(request.retrieval.b))
   }
 }
