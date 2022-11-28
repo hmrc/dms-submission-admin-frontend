@@ -17,13 +17,15 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
+import models.SubmissionItemStatus
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, IAAction, Resource, ResourceLocation, ResourceType, Retrieval}
+import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{DailySummariesView, SubmissionsView}
+import views.html.SubmissionsView
 
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -50,8 +52,12 @@ class SubmissionsController @Inject()(
       retrieval = Retrieval.username
     )
 
-  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
-    connector.list(service).map { submissions =>
+  def onPageLoad(
+                  service: String,
+                  status: Option[SubmissionItemStatus],
+                  created: Option[LocalDate]
+                ): Action[AnyContent] = authorised(service, read).async { implicit request =>
+    connector.list(service, status, created).map { submissions =>
       Ok(view(service, submissions))
     }
   }
