@@ -45,6 +45,13 @@ unauthorised.heading = You can’t access this service with this account
 submissions.title = Submissions for {0}
 submissions.heading = Submissions for {0}
 submissions.none = There are no submissions for this service.
+submissions.filters = Filtered by
+submissions.filter.status = Status of {0}
+submissions.filter.created = Created on {0}
+submissions.id = Id
+submissions.status = Status
+submissions.lastUpdated = Last updated
+submissions.failureReason = Failure reason
 
 dailySummaries.title = Daily submissions for {0}
 dailySummaries.heading = Daily submissions for {0}

@@ -58,7 +58,7 @@ class SubmissionsController @Inject()(
                   created: Option[LocalDate]
                 ): Action[AnyContent] = authorised(service, read).async { implicit request =>
     connector.list(service, status, created).map { submissions =>
-      Ok(view(service, submissions))
+      Ok(view(service, submissions, status, created))
     }
   }
 }
