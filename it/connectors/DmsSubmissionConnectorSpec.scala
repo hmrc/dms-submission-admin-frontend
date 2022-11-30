@@ -1,24 +1,28 @@
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, get, ok, serverError, urlMatching, urlPathMatching}
-import models.{DailySummary, DailySummaryResponse, SubmissionItemStatus, SubmissionSummary}
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, get, notFound, ok, post, serverError, status, urlMatching, urlPathMatching}
+import models.{DailySummary, DailySummaryResponse, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
+import play.api.http.Status.{ACCEPTED, NOT_FOUND}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import util.WireMockHelper
 
-import java.time.{Instant, LocalDate}
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 
 class DmsSubmissionConnectorSpec
   extends AnyFreeSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
-    with WireMockHelper {
+    with WireMockHelper
+    with OptionValues {
 
   private lazy val app: Application =
     GuiceApplicationBuilder()
@@ -26,6 +30,67 @@ class DmsSubmissionConnectorSpec
       .build()
 
   private lazy val connector = app.injector.instanceOf[DmsSubmissionConnector]
+
+  private val clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
+
+  "get" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val id = "id"
+    val url = s"/dms-submission/$serviceName/submissions/$id"
+
+    val item = SubmissionItem(
+      id = id,
+      owner = serviceName,
+      callbackUrl = "callbackUrl",
+      status = SubmissionItemStatus.Submitted,
+      objectSummary = ObjectSummary(
+        location = "file",
+        contentLength = 1337L,
+        contentMd5 = "hash",
+        lastModified = clock.instant().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS)
+      ),
+      failureReason = None,
+      created = clock.instant().truncatedTo(ChronoUnit.SECONDS),
+      lastUpdated = clock.instant().truncatedTo(ChronoUnit.SECONDS),
+      sdesCorrelationId = "sdesCorrelationId"
+    )
+
+    "must return a submission item when the server returns OK and some submission" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(ok(Json.stringify(Json.toJson(item))))
+      )
+
+      val result = connector.get(serviceName, id)(hc).futureValue
+
+      result.value mustEqual item
+    }
+
+    "must return None when the server returns NOT_FOUND" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(notFound())
+      )
+
+      val result = connector.get(serviceName, id)(hc).futureValue
+
+      result mustBe None
+    }
+
+    "must return a failed future when the server returns another status" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.get(serviceName, id)(hc).failed.futureValue
+    }
+  }
 
   "list" - {
 
@@ -129,6 +194,44 @@ class DmsSubmissionConnectorSpec
       )
 
       connector.dailySummaries(serviceName)(hc).failed.futureValue
+    }
+  }
+
+  "retry" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val id = "id"
+    val url = s"/dms-submission/$serviceName/submissions/$id/retry"
+
+    "must return successfully when the server responds with ACCEPTED" in {
+
+      server.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(ACCEPTED))
+      )
+
+      connector.retry(serviceName, id)(hc).futureValue
+    }
+
+    "must fail when the server responds with NOT_FOUND" in {
+
+      server.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(NOT_FOUND))
+      )
+
+      connector.retry(serviceName, id)(hc).failed.futureValue
+    }
+
+    "must fail when the server responds with SERVER_ERROR" in {
+
+      server.stubFor(
+        post(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.retry(serviceName, id)(hc).failed.futureValue
     }
   }
 }

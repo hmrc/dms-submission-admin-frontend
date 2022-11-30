@@ -17,17 +17,16 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummaryResponse, Done, SubmissionItem, SubmissionItemStatus, SubmissionSummary, javaLocalDateQueryStringBindable}
 import play.api.Configuration
+import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
 
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import models.javaLocalDateQueryStringBindable
-
 import java.net.URL
 
 @Singleton
@@ -37,6 +36,11 @@ class DmsSubmissionConnector @Inject()(
                                       )(implicit ec: ExecutionContext) {
 
   private val dmsSubmissionService: Service = configuration.get[Service]("microservice.services.dms-submission")
+
+  def get(serviceName: String, id: String)(implicit hc: HeaderCarrier): Future[Option[SubmissionItem]] =
+    httpClient
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/$id")
+      .execute[Option[SubmissionItem]]
 
   def list(
             serviceName: String,
@@ -65,4 +69,16 @@ class DmsSubmissionConnector @Inject()(
     httpClient
       .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summaries")
       .execute[DailySummaryResponse]
+
+  def retry(serviceName: String, id: String)(implicit hc: HeaderCarrier): Future[Done] =
+    httpClient
+      .post(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/$id/retry")
+      .execute
+      .flatMap { response =>
+        if (response.status == ACCEPTED) {
+          Future.successful(Done)
+        } else {
+          Future.failed(UpstreamErrorResponse("Unexpected response to retry request", response.status))
+        }
+      }
 }
