@@ -19,9 +19,60 @@ package models
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{EitherValues, OptionValues}
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.QueryStringBindable
 
 class SubmissionItemStatusSpec extends AnyFreeSpec with Matchers with OptionValues with EitherValues {
+
+  "read" - {
+
+    "must read Submitted" in {
+      JsString("Submitted").as[SubmissionItemStatus] mustEqual SubmissionItemStatus.Submitted
+    }
+
+    "must read Forwarded" in {
+      JsString("Forwarded").as[SubmissionItemStatus] mustEqual SubmissionItemStatus.Forwarded
+    }
+
+    "must read Failed" in {
+      JsString("Failed").as[SubmissionItemStatus] mustEqual SubmissionItemStatus.Failed
+    }
+
+    "must read Processed" in {
+      JsString("Processed").as[SubmissionItemStatus] mustEqual SubmissionItemStatus.Processed
+    }
+
+    "must read Completed" in {
+      JsString("Completed").as[SubmissionItemStatus] mustEqual SubmissionItemStatus.Completed
+    }
+
+    "must fail to read anything else" in {
+      JsString("foobar").validate[SubmissionItemStatus].isError mustBe true
+    }
+  }
+
+  "write" - {
+
+    "must write Submitted" in {
+      Json.toJson[SubmissionItemStatus](SubmissionItemStatus.Submitted) mustEqual JsString("Submitted")
+    }
+
+    "must write Forwarded" in {
+      Json.toJson[SubmissionItemStatus](SubmissionItemStatus.Forwarded) mustEqual JsString("Forwarded")
+    }
+
+    "must write Failed" in {
+      Json.toJson[SubmissionItemStatus](SubmissionItemStatus.Failed) mustEqual JsString("Failed")
+    }
+
+    "must write Processed" in {
+      Json.toJson[SubmissionItemStatus](SubmissionItemStatus.Processed) mustEqual JsString("Processed")
+    }
+
+    "must write Completed" in {
+      Json.toJson[SubmissionItemStatus](SubmissionItemStatus.Completed) mustEqual JsString("Completed")
+    }
+  }
 
   "queryStringBindable" - {
 

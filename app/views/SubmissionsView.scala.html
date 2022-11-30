@@ -33,13 +33,14 @@
   }
 
   @layout(
-    pageTitle = titleNoForm(messages("submissions.title", service)),
+    pageTitle = titleNoForm(messages("submissions.title")),
     pageLayout = pageLayout
   ) {
 
-    <h1 class="govuk-heading-l">
-      @messages("submissions.heading", service)
-    </h1>
+    <header class="hmrc-page-heading">
+      <h1 class="govuk-heading-l">@messages("submissions.heading")</h1>
+      <p class="hmrc-caption govuk-caption-l">@service</p>
+    </header>
 
     @if(List(status, created).flatten.nonEmpty) {
       <h2 class="govuk-heading-s">
@@ -70,16 +71,20 @@
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-          @submissions.map { submission =>
+          @submissions.sortBy(_.lastUpdated).reverse.map { submission =>
             <tr class="govuk-table__row">
-              <th class="govuk-table__header" scope="row"><code class="govuk-!-font-size-16">@submission.id</code></th>
+              <th class="govuk-table__header" scope="row">
+                <a href="@routes.SubmissionController.onPageLoad(service, submission.id)" class="govuk-link govuk-!-font-size-16">
+                  @submission.id
+                </a>
+              </th>
               @if(created.isEmpty) {
                 <th class="govuk-table__header" scope="row">@submission.status</th>
               }
               @if(submissions.exists(_.failureReason.isDefined)) {
                 <td class="govuk-table__cell">@submission.failureReason</td>
               }
-              <td class="govuk-table__cell">@dateTime(LocalDateTime.ofInstant(submission.lastUpdated, ZoneOffset.UTC))</td>
+              <td class="govuk-table__cell">@submission.lastUpdated</td>
             </tr>
           }
         </tbody>

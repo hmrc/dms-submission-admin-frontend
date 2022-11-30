@@ -29,11 +29,14 @@
   }
 
   @layout(
-    pageTitle = titleNoForm(messages("dailySummaries.title", service)),
+    pageTitle = titleNoForm(messages("dailySummaries.title")),
     pageLayout = pageLayout
   ) {
 
-    <h1 class="govuk-heading-xl">@messages("dailySummaries.heading", service)</h1>
+    <header class="hmrc-page-heading">
+      <h1 class="govuk-heading-l">@messages("dailySummaries.heading")</h1>
+      <p class="hmrc-caption govuk-caption-l">@service</p>
+    </header>
 
     <table class="govuk-body govuk-table">
       <thead class="govuk-table__head">
@@ -47,7 +50,7 @@
         </tr>
       </thead>
       <tbody class="govuk-table__body">
-      @summaryResponse.summaries.map { summary =>
+      @summaryResponse.summaries.sortBy(_.date).reverse.map { summary =>
         <tr class="govuk-table__row">
           <th scope="row" class="govuk-table__header">@date(summary.date)</th>
           <td class="govuk-table__cell govuk-table__cell--numeric">

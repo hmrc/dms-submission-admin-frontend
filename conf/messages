@@ -42,8 +42,8 @@ index.p = Select which service you''d like to see the submissions for
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-submissions.title = Submissions for {0}
-submissions.heading = Submissions for {0}
+submissions.title = Submissions
+submissions.heading = Submissions
 submissions.none = There are no submissions for this service.
 submissions.filters = Filtered by
 submissions.filter.status = Status of {0}
@@ -53,11 +53,23 @@ submissions.status = Status
 submissions.lastUpdated = Last updated
 submissions.failureReason = Failure reason
 
-dailySummaries.title = Daily submissions for {0}
-dailySummaries.heading = Daily submissions for {0}
+dailySummaries.title = Daily submissions
+dailySummaries.heading = Daily submissions
 
 status.submitted = Submitted
 status.forwarded = Forwarded
 status.processed = Processed
 status.completed = Completed
 status.failed = Failed
+
+submission.title = Submission
+submission.heading = Submission
+submission.id = Id
+submission.sdesCorrelationId = SDES Correlation Id
+submission.status = Status
+submission.createdAt = Created at
+submission.lastUpdated = Last updated
+submission.failureReason = Failure reason
+submission.retry = Resend submission
+submission.success = Success
+submission.retryComplete = Retry submitted for {0}
