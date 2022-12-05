@@ -18,6 +18,7 @@ package controllers
 
 import connectors.DmsSubmissionConnector
 import models.SubmissionItemStatus
+import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
@@ -26,16 +27,19 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmissionsView
 
 import java.time.LocalDate
-import javax.inject.Inject
+import javax.inject.{Singleton, Inject}
 import scala.concurrent.ExecutionContext
 
+@Singleton
 class SubmissionsController @Inject()(
                                        val controllerComponents: MessagesControllerComponents,
+                                       configuration: Configuration,
                                        auth: FrontendAuthComponents,
                                        view: SubmissionsView,
                                        connector: DmsSubmissionConnector
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
+  private val limit: Int = configuration.get[Int]("submissions.limit")
 
   private val read = IAAction("READ")
 
@@ -55,10 +59,11 @@ class SubmissionsController @Inject()(
   def onPageLoad(
                   service: String,
                   status: Option[SubmissionItemStatus],
-                  created: Option[LocalDate]
+                  created: Option[LocalDate],
+                  offset: Option[Int]
                 ): Action[AnyContent] = authorised(service, read).async { implicit request =>
-    connector.list(service, status, created).map { submissions =>
-      Ok(view(service, submissions, status, created))
+    connector.list(service, status, created, Some(limit), offset).map { submissions =>
+      Ok(view(service, submissions, status, created, limit, offset.getOrElse(0)))
     }
   }
 }

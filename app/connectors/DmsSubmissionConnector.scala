@@ -45,15 +45,20 @@ class DmsSubmissionConnector @Inject()(
   def list(
             serviceName: String,
             status: Option[SubmissionItemStatus] = None,
-            created: Option[LocalDate] = None
+            created: Option[LocalDate] = None,
+            limit: Option[Int] = None,
+            offset: Option[Int] = None
           )(implicit hc: HeaderCarrier): Future[Seq[SubmissionSummary]] = {
 
     val localDateBinder: QueryStringBindable[LocalDate] = implicitly
     val statusBinder: QueryStringBindable[SubmissionItemStatus] = implicitly
+    val intBinder: QueryStringBindable[Int] = implicitly
 
     val params = List(
       status.map(statusBinder.unbind("status", _)),
-      created.map(localDateBinder.unbind("created", _))
+      created.map(localDateBinder.unbind("created", _)),
+      limit.map(intBinder.unbind("limit", _)),
+      offset.map(intBinder.unbind("offset", _))
     ).flatten
 
     val query = if (params.isEmpty) "" else {

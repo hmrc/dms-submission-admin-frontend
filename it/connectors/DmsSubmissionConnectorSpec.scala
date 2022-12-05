@@ -126,13 +126,17 @@ class DmsSubmissionConnectorSpec
         get(urlPathMatching(url))
           .withQueryParam("status", equalTo("completed"))
           .withQueryParam("created", equalTo("2022-02-01"))
+          .withQueryParam("limit", equalTo("10"))
+          .withQueryParam("offset", equalTo("5"))
           .willReturn(ok(Json.toJson(submissions).toString))
       )
 
       connector.list(
         serviceName,
         status = Some(SubmissionItemStatus.Completed),
-        created = Some(LocalDate.of(2022, 2, 1))
+        created = Some(LocalDate.of(2022, 2, 1)),
+        limit = Some(10),
+        offset = Some(5)
       )(hc).futureValue
     }
 
