@@ -100,8 +100,8 @@ class DmsSubmissionConnectorSpec
     val listResult = ListResult(
       totalCount = 2,
       List(
-        SubmissionSummary("id1", "Submitted", None, Instant.now),
-        SubmissionSummary("id2", "Processed", None, Instant.now)
+        SubmissionSummary("id1", "Submitted", None, Instant.now.truncatedTo(ChronoUnit.MILLIS)),
+        SubmissionSummary("id2", "Processed", None, Instant.now.truncatedTo(ChronoUnit.MILLIS))
       )
     )
 
