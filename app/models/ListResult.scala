@@ -17,18 +17,12 @@
 package models
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Instant
+final case class ListResult (
+                              totalCount: Int,
+                              summaries: Seq[SubmissionSummary]
+                            )
 
-final case class SubmissionSummary(
-                                    id: String,
-                                    status: String,
-                                    failureReason: Option[String],
-                                    lastUpdated: Instant
-                                  )
-
-object SubmissionSummary extends MongoJavatimeFormats.Implicits {
-
-  implicit lazy val format: OFormat[SubmissionSummary] = Json.format
+object ListResult {
+  implicit lazy val format: OFormat[ListResult] = Json.format
 }

@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.{SubmissionItemStatus, SubmissionSummary}
+import models.{ListResult, SubmissionItemStatus, SubmissionSummary}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -61,6 +61,9 @@ class SubmissionsControllerSpec
       bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents),
       bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
     )
+    .configure(
+      "submissions.limit" -> 50
+    )
     .build()
 
   private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
@@ -75,6 +78,14 @@ class SubmissionsControllerSpec
 
   "onPageLoad" - {
 
+    val listResult = ListResult(
+      totalCount = 2,
+      List(
+        SubmissionSummary("id1", "Submitted", None, Instant.now),
+        SubmissionSummary("id2", "Processed", None, Instant.now)
+      )
+    )
+
     "must return OK and the correct view when the user is authorised and there are some submissions for this service" in {
 
       val request =
@@ -84,30 +95,13 @@ class SubmissionsControllerSpec
       val submissions = List(SubmissionSummary("id", "Processed", None, Instant.now))
       val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any())(any())).thenReturn(Future.successful(submissions))
+      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any(), any(), any())(any())).thenReturn(Future.successful(listResult))
 
       val result = route(app, request).value
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, submissions, None, None)(request, implicitly).toString
-    }
-
-    "must return OK and the correct view when the user is authorised and there are no submissions for this service" in {
-
-      val request =
-        FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
-          .withSession("authToken" -> "Token some-token")
-
-      val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
-      when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any())(any())).thenReturn(Future.successful(Nil))
-
-      val result = route(app, request).value
-      val view = app.injector.instanceOf[SubmissionsView]
-
-      status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, Nil, None, None)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, listResult.summaries, None, None, 50, 0, listResult.totalCount)(request, implicitly).toString
     }
 
     "must use the parameters from the url when calling dms submission" in {
@@ -118,7 +112,8 @@ class SubmissionsControllerSpec
       val url = routes.SubmissionsController.onPageLoad(
         service = serviceName,
         status = Some(itemStatus),
-        created = Some(created)
+        created = Some(created),
+        offset = Some(5)
       ).url
 
       val request =
@@ -127,14 +122,14 @@ class SubmissionsControllerSpec
 
       val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any())(any())).thenReturn(Future.successful(Nil))
+      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any(), any(), any())(any())).thenReturn(Future.successful(listResult))
 
       val result = route(app, request).value
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, Nil, Some(itemStatus), Some(created))(request, implicitly).toString
-      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Some(itemStatus)), eqTo(Some(created)))(any())
+      contentAsString(result) mustEqual view(serviceName, listResult.summaries, Some(itemStatus), Some(created), 50, 5, listResult.totalCount)(request, implicitly).toString
+      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Some(itemStatus)), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
     }
 
     "must redirect to login when the user is not authenticated" in {
