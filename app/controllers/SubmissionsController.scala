@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.SubmissionItemStatus
+import models.{ListResult, SubmissionItemStatus}
 import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmissionsView
 
 import java.time.LocalDate
-import javax.inject.{Singleton, Inject}
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -62,8 +62,8 @@ class SubmissionsController @Inject()(
                   created: Option[LocalDate],
                   offset: Option[Int]
                 ): Action[AnyContent] = authorised(service, read).async { implicit request =>
-    connector.list(service, status, created, Some(limit), offset).map { submissions =>
-      Ok(view(service, submissions, status, created, limit, offset.getOrElse(0)))
+    connector.list(service, status, created, Some(limit), offset).map { listResult =>
+      Ok(view(service, listResult.summaries, status, created, limit, offset.getOrElse(0), listResult.totalCount))
     }
   }
 }

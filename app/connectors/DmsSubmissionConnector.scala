@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, SubmissionItem, SubmissionItemStatus, SubmissionSummary, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, ListResult, SubmissionItem, SubmissionItemStatus, SubmissionSummary, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
@@ -48,7 +48,7 @@ class DmsSubmissionConnector @Inject()(
             created: Option[LocalDate] = None,
             limit: Option[Int] = None,
             offset: Option[Int] = None
-          )(implicit hc: HeaderCarrier): Future[Seq[SubmissionSummary]] = {
+          )(implicit hc: HeaderCarrier): Future[ListResult] = {
 
     val localDateBinder: QueryStringBindable[LocalDate] = implicitly
     val statusBinder: QueryStringBindable[SubmissionItemStatus] = implicitly
@@ -67,7 +67,7 @@ class DmsSubmissionConnector @Inject()(
 
     httpClient
       .get(new URL(s"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions$query"))
-      .execute[Seq[SubmissionSummary]]
+      .execute[ListResult]
   }
 
   def dailySummaries(serviceName: String)(implicit hc: HeaderCarrier): Future[DailySummaryResponse] =

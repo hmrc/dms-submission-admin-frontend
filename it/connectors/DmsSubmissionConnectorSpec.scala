@@ -1,7 +1,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, get, notFound, ok, post, serverError, status, urlMatching, urlPathMatching}
-import models.{DailySummary, DailySummaryResponse, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummary, DailySummaryResponse, ListResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -97,30 +97,27 @@ class DmsSubmissionConnectorSpec
     val hc = HeaderCarrier()
     val serviceName = "service-name"
     val url = s"/dms-submission/$serviceName/submissions"
-
-    "must return a list of submissions when the server returns OK and some submissions" in {
-
-      val submissions = List(
+    val listResult = ListResult(
+      totalCount = 2,
+      List(
         SubmissionSummary("id1", "Submitted", None, Instant.now),
         SubmissionSummary("id2", "Processed", None, Instant.now)
       )
+    )
+
+    "must return a list of submissions when the server returns OK and some submissions" in {
 
       server.stubFor(
         get(urlMatching(url))
-          .willReturn(ok(Json.toJson(submissions).toString))
+          .willReturn(ok(Json.toJson(listResult).toString))
       )
 
       val result = connector.list(serviceName)(hc).futureValue
 
-      result mustEqual submissions
+      result mustEqual listResult
     }
 
     "must add filters to the request when passed" in {
-
-      val submissions = List(
-        SubmissionSummary("id1", "Submitted", None, Instant.now),
-        SubmissionSummary("id2", "Processed", None, Instant.now)
-      )
 
       server.stubFor(
         get(urlPathMatching(url))
@@ -128,7 +125,7 @@ class DmsSubmissionConnectorSpec
           .withQueryParam("created", equalTo("2022-02-01"))
           .withQueryParam("limit", equalTo("10"))
           .withQueryParam("offset", equalTo("5"))
-          .willReturn(ok(Json.toJson(submissions).toString))
+          .willReturn(ok(Json.toJson(listResult).toString))
       )
 
       connector.list(
@@ -138,18 +135,6 @@ class DmsSubmissionConnectorSpec
         limit = Some(10),
         offset = Some(5)
       )(hc).futureValue
-    }
-
-    "must return an empty list when the server returns OK and no submissions" in {
-
-      server.stubFor(
-        get(urlMatching(url))
-          .willReturn(ok("[]"))
-      )
-
-      val result = connector.list(serviceName)(hc).futureValue
-
-      result mustBe empty
     }
 
     "must return a failed future when the server returns an error" in {

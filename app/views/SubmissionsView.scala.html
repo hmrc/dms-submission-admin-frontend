@@ -28,10 +28,10 @@
         status: Option[SubmissionItemStatus],
         created: Option[LocalDate],
         limit: Int,
-        offset: Int
+        offset: Int,
+        totalCount: Int
 )(implicit request: Request[_], messages: Messages)
 
-  @totalCount = @{2400}
   @currentPage = @{offset / limit + 1}
   @lastPage = @{totalCount / limit}
 
