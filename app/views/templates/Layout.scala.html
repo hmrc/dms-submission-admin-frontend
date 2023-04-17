@@ -14,63 +14,26 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
-@import uk.gov.hmrc.hmrcfrontend.views.config.StandardAlphaBanner
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.pagelayout.PageLayout
-@import views.html.helper.CSPNonce
-
 @this(
-    appConfig: FrontendAppConfig,
-    govukLayout: GovukLayout,
-    govukBackLink: GovukBackLink,
-    hmrcHead: HmrcHead,
-    hmrcStandardHeader: HmrcStandardHeader,
-    hmrcStandardFooter: HmrcStandardFooter,
-    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-    hmrcScripts: HmrcScripts,
-    twoThirdsContent: TwoThirdsMainContent
+        govukLayout: GovukLayout,
+        hmrcInternalHead: HmrcInternalHead,
+        hmrcInternalHeader: HmrcInternalHeader,
+        twoThirdsContent: TwoThirdsMainContent,
+        govukBackLink: GovukBackLink
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, pageLayout: Html => Html = twoThirdsContent(_))(contentBlock: Html)(implicit request: Request[_], messages: Messages)
-
-@head = {
-
-    @hmrcHead(
-        nonce     = CSPNonce.get,
-        headBlock = None
-    )
-
-    <link href="@routes.Assets.versioned("stylesheets/application.css")" media="all" rel="stylesheet" type="text/css"@CSPNonce.get.map {n=> nonce="@n"} />
-}
-
-@additionalScripts = {
-    <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
-}
+@(pageTitle: Option[String] = None, showBackLink: Boolean = true, pageLayout: Html => Html = twoThirdsContent(_))(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @beforeContent = {
-
-    @if(showBackLink) {
-        @govukBackLink(BackLinkViewModel(href = "#").withCssClass("js-visible"))
-    }
-}
-
-@content = {
-    @contentBlock
+  @if(showBackLink) {
+    @govukBackLink(BackLinkViewModel(href = "#").withCssClass("js-visible"))
+  }
 }
 
 @govukLayout(
-    pageTitle   = Some(pageTitle),
-    headBlock   = Some(head),
-    headerBlock = Some(hmrcStandardHeader(
-        serviceUrl  = Some(routes.IndexController.onPageLoad.url),
-        signOutUrl  = None,
-        phaseBanner = None
-    )),
-    beforeContentBlock = Some(beforeContent),
-    footerBlock        = Some(hmrcStandardFooter()),
-    scriptsBlock       = Some(hmrcScripts(
-        nonce        = CSPNonce.get,
-        scriptsBlock = Some(additionalScripts)
-    )),
-    mainContentLayout = Some(pageLayout)
-)(content)
+  pageTitle = pageTitle,
+  headBlock = Some(hmrcInternalHead()),
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("service.name"))))),
+  beforeContentBlock = Some(beforeContent),
+  mainContentLayout = Some(pageLayout)
+)(contentBlock)

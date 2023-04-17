@@ -23,7 +23,7 @@
 @(resources: Set[Resource])(implicit request: Request[_], messages: Messages)
 
   @layout(
-    pageTitle = titleNoForm(messages("index.title")),
+    pageTitle = Some(titleNoForm(messages("index.title"))),
     showBackLink = false
   ) {
 
