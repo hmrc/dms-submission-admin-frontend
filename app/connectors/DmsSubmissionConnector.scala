@@ -17,17 +17,17 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, ListResult, SubmissionItem, SubmissionItemStatus, SubmissionSummary, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, ListResult, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
 
+import java.net.URL
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import java.net.URL
 
 @Singleton
 class DmsSubmissionConnector @Inject()(
