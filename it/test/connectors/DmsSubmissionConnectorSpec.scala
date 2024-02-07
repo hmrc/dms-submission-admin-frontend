@@ -1,6 +1,22 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, get, notFound, ok, post, serverError, status, urlMatching, urlPathMatching}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import models.{DailySummary, DailySummaryResponse, ListResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -11,7 +27,7 @@ import play.api.http.Status.{ACCEPTED, NOT_FOUND}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import util.WireMockHelper
+import uk.gov.hmrc.http.test.WireMockSupport
 
 import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
@@ -21,12 +37,12 @@ class DmsSubmissionConnectorSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
-    with WireMockHelper
+    with WireMockSupport
     with OptionValues {
 
   private lazy val app: Application =
     GuiceApplicationBuilder()
-      .configure("microservice.services.dms-submission.port" -> server.port())
+      .configure("microservice.services.dms-submission.port" -> wireMockPort)
       .build()
 
   private lazy val connector = app.injector.instanceOf[DmsSubmissionConnector]
@@ -59,7 +75,7 @@ class DmsSubmissionConnectorSpec
 
     "must return a submission item when the server returns OK and some submission" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(ok(Json.stringify(Json.toJson(item))))
       )
@@ -71,7 +87,7 @@ class DmsSubmissionConnectorSpec
 
     "must return None when the server returns NOT_FOUND" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(notFound())
       )
@@ -83,7 +99,7 @@ class DmsSubmissionConnectorSpec
 
     "must return a failed future when the server returns another status" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(serverError())
       )
@@ -107,7 +123,7 @@ class DmsSubmissionConnectorSpec
 
     "must return a list of submissions when the server returns OK and some submissions" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(ok(Json.toJson(listResult).toString))
       )
@@ -119,7 +135,7 @@ class DmsSubmissionConnectorSpec
 
     "must add filters to the request when passed" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(url))
           .withQueryParam("status", equalTo("completed"))
           .withQueryParam("created", equalTo("2022-02-01"))
@@ -139,7 +155,7 @@ class DmsSubmissionConnectorSpec
 
     "must return a failed future when the server returns an error" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(serverError())
       )
@@ -165,7 +181,7 @@ class DmsSubmissionConnectorSpec
         "summaries" -> summaries
       )
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(ok(json.toString))
       )
@@ -177,7 +193,7 @@ class DmsSubmissionConnectorSpec
 
     "must return a failed future when the server returns an error" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlMatching(url))
           .willReturn(serverError())
       )
@@ -195,7 +211,7 @@ class DmsSubmissionConnectorSpec
 
     "must return successfully when the server responds with ACCEPTED" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         post(urlMatching(url))
           .willReturn(status(ACCEPTED))
       )
@@ -205,7 +221,7 @@ class DmsSubmissionConnectorSpec
 
     "must fail when the server responds with NOT_FOUND" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         post(urlMatching(url))
           .willReturn(status(NOT_FOUND))
       )
@@ -213,9 +229,9 @@ class DmsSubmissionConnectorSpec
       connector.retry(serviceName, id)(hc).failed.futureValue
     }
 
-    "must fail when the server responds with SERVER_ERROR" in {
+    "must fail when the server responds with wireMockServer_ERROR" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         post(urlMatching(url))
           .willReturn(serverError())
       )

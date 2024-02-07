@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ class SubmissionsControllerSpec
   private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   override protected def beforeEach(): Unit = {
-    Mockito.reset(
+    Mockito.reset[Any](
       mockDmsSubmissionConnector,
       mockStubBehaviour
     )
@@ -92,7 +92,6 @@ class SubmissionsControllerSpec
         FakeRequest(GET, routes.SubmissionsController.onPageLoad(serviceName).url)
           .withSession("authToken" -> "Token some-token")
 
-      val submissions = List(SubmissionSummary("id", "Processed", None, Instant.now))
       val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
       when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any(), any(), any())(any())).thenReturn(Future.successful(listResult))
