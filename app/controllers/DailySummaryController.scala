@@ -47,8 +47,7 @@ class DailySummaryController @Inject()(
         ),
         action
       ),
-      retrieval = Retrieval.username,
-      onForbiddenError = ???
+      retrieval = Retrieval.username
     )
 
   def dailySummaries(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>

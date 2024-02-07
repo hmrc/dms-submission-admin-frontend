@@ -18,7 +18,9 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-test-play-30"  % bootstrapVersion,
     "org.mockito"             %% "mockito-scala-scalatest" % "1.17.14",
     "org.scalatestplus"       %% "scalacheck-1-17"         % "3.2.17.0"
-  ).map(_ % "test, it")
+  ).map(_ % Test)
+
+  val integration: Seq[ModuleID] = Seq.empty
 
   def apply(): Seq[ModuleID] = compile ++ test
 }
