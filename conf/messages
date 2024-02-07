@@ -11,6 +11,10 @@ site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
 
+global.error.forbidden403.title = You are not authorised to access this page
+global.error.forbidden403.heading = You are not authorised to access this page
+global.error.forbidden403.message = Make sure that you're a member of the owning team in the catalogue
+
 date.day = Day
 date.month = Month
 date.year = Year
