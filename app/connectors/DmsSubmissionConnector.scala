@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, ListResult, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
@@ -86,4 +86,10 @@ class DmsSubmissionConnector @Inject()(
           Future.failed(UpstreamErrorResponse("Unexpected response to retry request", response.status))
         }
       }
+
+  def listServices(implicit hc: HeaderCarrier): Future[Set[String]] =
+    httpClient
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/services")
+      .execute[ListServicesResult]
+      .map(_.services)
 }
