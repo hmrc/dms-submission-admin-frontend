@@ -16,6 +16,7 @@
 
 package controllers
 
+import connectors.DmsSubmissionConnector
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, ResourceType, Retrieval}
@@ -23,18 +24,25 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class IndexController @Inject()(
                                  val controllerComponents: MessagesControllerComponents,
                                  view: IndexView,
+                                 dmsSubmissionConnector: DmsSubmissionConnector,
                                  auth: FrontendAuthComponents
-                               ) extends FrontendBaseController with I18nSupport {
+                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] =
     auth.authenticatedAction(
       continueUrl = routes.IndexController.onPageLoad,
       retrieval = Retrieval.username ~ Retrieval.locations(Some(ResourceType("dms-submission")))
-    ) { implicit request =>
-      Ok(view(request.retrieval.b))
+    ).async { implicit request =>
+      dmsSubmissionConnector.listServices.map { services =>
+        val authorisedServices = request.retrieval.b.map(_.resourceLocation.value)
+        val activeAuthorisedServices = authorisedServices.intersect(services)
+        val unauthorisedServices = services.diff(activeAuthorisedServices)
+        Ok(view(activeAuthorisedServices, unauthorisedServices))
+      }
   }
 }

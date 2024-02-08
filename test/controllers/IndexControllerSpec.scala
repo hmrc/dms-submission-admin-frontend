@@ -33,6 +33,7 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.internalauth.client.Retrieval.Username
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.internalauth.client._
+import _root_.connectors.DmsSubmissionConnector
 import views.html.IndexView
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,15 +49,19 @@ class IndexControllerSpec
 
   private val mockStubBehaviour = mock[StubBehaviour]
   private val stubFrontendAuthComponents = FrontendAuthComponentsStub(mockStubBehaviour)(Helpers.stubControllerComponents(), implicitly)
+  private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
 
   private val app = GuiceApplicationBuilder()
-    .overrides(bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents))
+    .overrides(
+      bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents),
+      bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
+    )
     .build()
 
   private implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockStubBehaviour)
+    Mockito.reset[Any](mockStubBehaviour, mockDmsSubmissionConnector)
     super.beforeEach()
   }
 
@@ -64,9 +69,11 @@ class IndexControllerSpec
 
     "must return OK and the correct view for a GET from an authorised user" in {
 
-      val resource = Resource(ResourceType("dms-submission"), ResourceLocation("foo"))
-      val retrieval = Username("username") ~ Set(resource)
+      val existingService = Resource(ResourceType("dms-submission"), ResourceLocation("foo"))
+      val nonExistingService = Resource(ResourceType("dms-submission"), ResourceLocation("baz"))
+      val retrieval = Username("username") ~ Set(existingService, nonExistingService)
       when(mockStubBehaviour.stubAuth[Username ~ Set[Resource]](eqTo(None), any())).thenReturn(Future.successful(retrieval))
+      when(mockDmsSubmissionConnector.listServices(any())).thenReturn(Future.successful(Set("foo", "bar")))
 
       val request =
         FakeRequest(GET, routes.IndexController.onPageLoad.url)
@@ -78,7 +85,21 @@ class IndexControllerSpec
 
       status(result) mustEqual OK
 
-      contentAsString(result) mustEqual view(Set(resource))(request, implicitly).toString
+      contentAsString(result) mustEqual view(Set("foo"), Set("bar"))(request, implicitly).toString
+    }
+
+    "must fail if the call to the DmsSubmissionConnector fails" in {
+
+      val resource = Resource(ResourceType("dms-submission"), ResourceLocation("foo"))
+      val retrieval = Username("username") ~ Set(resource)
+      when(mockStubBehaviour.stubAuth[Username ~ Set[Resource]](eqTo(None), any())).thenReturn(Future.successful(retrieval))
+      when(mockDmsSubmissionConnector.listServices(any())).thenReturn(Future.failed(new RuntimeException()))
+
+      val request =
+        FakeRequest(GET, routes.IndexController.onPageLoad.url)
+          .withSession("authToken" -> "Token some-token")
+
+      route(app, request).value.failed.futureValue
     }
 
     "must redirect to internal-auth-frontend for an unauthenticated user" in {

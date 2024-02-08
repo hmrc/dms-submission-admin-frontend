@@ -41,6 +41,9 @@ error.summary.title = There is a problem
 
 index.title = DMS Submission Admin Frontend
 index.heading = DMS Submission Admin Frontend
+index.yourServices = Your services
+index.otherServices = Other services
+index.noServices = You are not authorised to view any active services
 index.p = Select which service you''d like to see the submissions for
 
 unauthorised.title = You can’t access this service with this account
