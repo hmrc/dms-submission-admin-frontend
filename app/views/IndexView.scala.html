@@ -14,13 +14,11 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.internalauth.client.Resource
-
 @this(
         layout: templates.Layout
 )
 
-@(resources: Set[Resource])(implicit request: Request[_], messages: Messages)
+@(authorisedServices: Set[String], unauthorisedServices: Set[String])(implicit request: Request[_], messages: Messages)
 
   @layout(
     pageTitle = Some(titleNoForm(messages("index.title"))),
@@ -29,13 +27,31 @@
 
     <h1 class="govuk-heading-l">@messages("index.heading")</h1>
 
-    <p class="govuk-body">@messages("index.p")</p>
+    <h2 class="govuk-heading-m">@messages("index.yourServices")</h2>
 
-    <ul class="govuk-list govuk-list--bullet">
-      @resources.toList.map { resource =>
-        <li><a href="@routes.DailySummaryController.dailySummaries(resource.resourceLocation.value)" class="govuk-link">
-          @resource.resourceLocation.value
+    @if(authorisedServices.nonEmpty) {
+
+      <p class="govuk-body">@messages("index.p")</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+      @authorisedServices.toList.map { service =>
+        <li><a href="@routes.DailySummaryController.dailySummaries(service)" class="govuk-link">
+        @service
         </a></li>
       }
-    </ul>
+      </ul>
+    } else {
+      <p class="govuk-body">@messages("index.noServices")</p>
+    }
+
+    @if(unauthorisedServices.nonEmpty) {
+
+      <h2 class="govuk-heading-m">@messages("index.otherServices")</h2>
+
+      <ul class="govuk-list govuk-list--bullet">
+      @unauthorisedServices.toList.map { service =>
+        <li>@service</li>
+      }
+      </ul>
+    }
   }

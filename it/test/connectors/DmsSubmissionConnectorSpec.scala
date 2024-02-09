@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DailySummary, DailySummaryResponse, ListResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummary, DailySummaryResponse, ListResult, ListServicesResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -229,7 +229,7 @@ class DmsSubmissionConnectorSpec
       connector.retry(serviceName, id)(hc).failed.futureValue
     }
 
-    "must fail when the server responds with wireMockServer_ERROR" in {
+    "must fail when the server responds with SERVER_ERROR" in {
 
       wireMockServer.stubFor(
         post(urlMatching(url))
@@ -237,6 +237,44 @@ class DmsSubmissionConnectorSpec
       )
 
       connector.retry(serviceName, id)(hc).failed.futureValue
+    }
+  }
+
+  "listServices" - {
+
+    val hc = HeaderCarrier()
+    val url = "/dms-submission/services"
+
+    "must return successfully when the server responds with OK" in {
+
+      val expected = ListServicesResult(Set("foo", "bar"))
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(ok(Json.stringify(Json.toJson(expected))))
+      )
+
+      connector.listServices(hc).futureValue mustEqual expected.services
+    }
+
+    "must fail when the server responds with NOT_FOUND" in {
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(notFound())
+      )
+
+      connector.listServices(hc).failed.futureValue
+    }
+
+    "must fail when the server responds with SERVER_ERROR" in {
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.listServices(hc).failed.futureValue
     }
   }
 }
