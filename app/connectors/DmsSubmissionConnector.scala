@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, NoFailureType, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
@@ -45,6 +45,7 @@ class DmsSubmissionConnector @Inject()(
   def list(
             serviceName: String,
             status: Option[SubmissionItemStatus] = None,
+            failureType: Option[Either[NoFailureType, SubmissionItem.FailureType]] = None,
             created: Option[LocalDate] = None,
             limit: Option[Int] = None,
             offset: Option[Int] = None
@@ -53,10 +54,12 @@ class DmsSubmissionConnector @Inject()(
     val localDateBinder: QueryStringBindable[LocalDate] = implicitly
     val statusBinder: QueryStringBindable[SubmissionItemStatus] = implicitly
     val intBinder: QueryStringBindable[Int] = implicitly
+    val failureTypeBinder: QueryStringBindable[Either[NoFailureType, SubmissionItem.FailureType]] = implicitly
 
     val params = List(
       status.map(statusBinder.unbind("status", _)),
       created.map(localDateBinder.unbind("created", _)),
+      failureType.map(failureTypeBinder.unbind("failureType", _)),
       limit.map(intBinder.unbind("limit", _)),
       offset.map(intBinder.unbind("offset", _))
     ).flatten

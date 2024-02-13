@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.{ListResult, SubmissionItemStatus, SubmissionSummary}
+import models.{ListResult, NoFailureType, SubmissionItemStatus, SubmissionSummary}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -111,6 +111,7 @@ class SubmissionsControllerSpec
       val url = routes.SubmissionsController.onPageLoad(
         service = serviceName,
         status = Some(itemStatus),
+        failureType = Some(Left(NoFailureType)),
         created = Some(created),
         offset = Some(5)
       ).url
@@ -121,14 +122,14 @@ class SubmissionsControllerSpec
 
       val predicate = Permission(Resource(ResourceType("dms-submission"), ResourceLocation(serviceName)), IAAction("READ"))
       when(mockStubBehaviour.stubAuth(eqTo(Some(predicate)), eqTo(Retrieval.username))).thenReturn(Future.successful(Username("username")))
-      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any(), any(), any())(any())).thenReturn(Future.successful(listResult))
+      when(mockDmsSubmissionConnector.list(eqTo(serviceName), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(listResult))
 
       val result = route(app, request).value
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
       contentAsString(result) mustEqual view(serviceName, listResult.summaries, Some(itemStatus), Some(created), 50, 5, listResult.totalCount)(request, implicitly).toString
-      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Some(itemStatus)), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
+      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Some(itemStatus)), eqTo(Some(Left(NoFailureType))), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
     }
 
     "must redirect to login when the user is not authenticated" in {

@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DailySummary, DailySummaryResponse, ListResult, ListServicesResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummary, DailySummaryResponse, ListResult, ListServicesResult, NoFailureType, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -139,6 +139,7 @@ class DmsSubmissionConnectorSpec
         get(urlPathMatching(url))
           .withQueryParam("status", equalTo("completed"))
           .withQueryParam("created", equalTo("2022-02-01"))
+          .withQueryParam("failureType", equalTo("none"))
           .withQueryParam("limit", equalTo("10"))
           .withQueryParam("offset", equalTo("5"))
           .willReturn(ok(Json.toJson(listResult).toString))
@@ -147,6 +148,7 @@ class DmsSubmissionConnectorSpec
       connector.list(
         serviceName,
         status = Some(SubmissionItemStatus.Completed),
+        failureType = Some(Left(NoFailureType)),
         created = Some(LocalDate.of(2022, 2, 1)),
         limit = Some(10),
         offset = Some(5)
