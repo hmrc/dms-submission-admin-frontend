@@ -30,9 +30,14 @@
   }
 }
 
+@head = {
+  @hmrcInternalHead()
+  <link href="@routes.Assets.versioned("stylesheets/application.css")" media="all" rel="stylesheet" type="text/css" />
+}
+
 @govukLayout(
   pageTitle = pageTitle,
-  headBlock = Some(hmrcInternalHead()),
+  headBlock = Some(head),
   headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("service.name"))))),
   beforeContentBlock = Some(beforeContent),
   mainContentLayout = Some(pageLayout)

@@ -10,6 +10,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.important = Important
 
 global.error.forbidden403.title = You are not authorised to access this page
 global.error.forbidden403.heading = You are not authorised to access this page
@@ -66,6 +67,7 @@ dailySummaries.heading = Daily submissions
 status.submitted = Submitted
 status.forwarded = Forwarded
 status.processed = Processed
+status.processing = Processing
 status.completed = Completed
 status.failed = Failed
 
@@ -80,6 +82,15 @@ submission.failureReason = Failure reason
 submission.retry = Resend submission
 submission.success = Success
 submission.retryComplete = Retry submitted for {0}
+
+summary.errors = Your service has failed submissions
+summary.failureType = Failure type
+summary.count = Count
+summary.action = Action
+summary.retryAll = Resend all
+
+failureType.timeout = Timeout
+failureType.sdes = SDES
 
 pagination.previous = Previous
 pagination.next = Next
