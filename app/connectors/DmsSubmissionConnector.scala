@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, NoFailureType, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, NoFailureType, SubmissionItem, SubmissionItemStatus, SummaryResponse, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
@@ -77,6 +77,11 @@ class DmsSubmissionConnector @Inject()(
     httpClient
       .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summaries")
       .execute[DailySummaryResponse]
+
+  def summary(serviceName: String)(implicit hc: HeaderCarrier): Future[SummaryResponse] =
+    httpClient
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summary")
+      .execute[SummaryResponse]
 
   def retry(serviceName: String, id: String)(implicit hc: HeaderCarrier): Future[Done] =
     httpClient

@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DailySummary, DailySummaryResponse, ListResult, ListServicesResult, NoFailureType, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummary, DailySummaryResponse, DailySummaryV2, ErrorSummary, ListResult, ListServicesResult, NoFailureType, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary, SummaryResponse}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -202,6 +202,47 @@ class DmsSubmissionConnectorSpec
       )
 
       connector.dailySummaries(serviceName)(hc).failed.futureValue
+    }
+  }
+
+  "summary" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val url = s"/dms-submission/$serviceName/submissions/summary"
+
+    "must return a service summary when the server returns one" in {
+
+      val summaries = List(
+        DailySummaryV2(LocalDate.of(2022, 1, 2), 1, 2, 3),
+        DailySummaryV2(LocalDate.of(2022, 1, 1), 6, 7, 8)
+      )
+
+      val errorSummary = ErrorSummary(1, 2)
+
+      val json = Json.obj(
+        "errors" -> errorSummary,
+        "summaries" -> summaries
+      )
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(ok(json.toString))
+      )
+
+      val result = connector.summary(serviceName)(hc).futureValue
+
+      result mustEqual SummaryResponse(errorSummary, summaries)
+    }
+
+    "must return a failed future when the server returns an error" in {
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.summary(serviceName)(hc).failed.futureValue
     }
   }
 
