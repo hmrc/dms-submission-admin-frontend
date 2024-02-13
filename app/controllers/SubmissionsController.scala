@@ -58,7 +58,7 @@ class SubmissionsController @Inject()(
 
   def onPageLoad(
                   service: String,
-                  status: Option[SubmissionItemStatus],
+                  status: Seq[SubmissionItemStatus],
                   failureType: Option[Either[NoFailureType, SubmissionItem.FailureType]],
                   created: Option[LocalDate],
                   offset: Option[Int]

@@ -138,6 +138,7 @@ class DmsSubmissionConnectorSpec
       wireMockServer.stubFor(
         get(urlPathMatching(url))
           .withQueryParam("status", equalTo("completed"))
+          .withQueryParam("status", equalTo("failed"))
           .withQueryParam("created", equalTo("2022-02-01"))
           .withQueryParam("failureType", equalTo("none"))
           .withQueryParam("limit", equalTo("10"))
@@ -147,7 +148,7 @@ class DmsSubmissionConnectorSpec
 
       connector.list(
         serviceName,
-        status = Some(SubmissionItemStatus.Completed),
+        status = Seq(SubmissionItemStatus.Completed, SubmissionItemStatus.Failed),
         failureType = Some(Left(NoFailureType)),
         created = Some(LocalDate.of(2022, 2, 1)),
         limit = Some(10),

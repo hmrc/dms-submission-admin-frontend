@@ -44,7 +44,7 @@ class DmsSubmissionConnector @Inject()(
 
   def list(
             serviceName: String,
-            status: Option[SubmissionItemStatus] = None,
+            status: Seq[SubmissionItemStatus] = Seq.empty,
             failureType: Option[Either[NoFailureType, SubmissionItem.FailureType]] = None,
             created: Option[LocalDate] = None,
             limit: Option[Int] = None,
