@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.{ListResult, NoFailureType, SubmissionItemStatus, SubmissionSummary}
+import models.{FailureTypeQuery, ListResult, SubmissionItemStatus, SubmissionSummary}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -111,7 +111,7 @@ class SubmissionsControllerSpec
       val url = routes.SubmissionsController.onPageLoad(
         service = serviceName,
         status = Seq(itemStatus),
-        failureType = Some(Left(NoFailureType)),
+        failureType = Some(FailureTypeQuery.None),
         created = Some(created),
         offset = Some(5)
       ).url
@@ -129,7 +129,7 @@ class SubmissionsControllerSpec
 
       status(result) mustEqual OK
       contentAsString(result) mustEqual view(serviceName, listResult.summaries, Seq(itemStatus), Some(created), 50, 5, listResult.totalCount)(request, implicitly).toString
-      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Seq(itemStatus)), eqTo(Some(Left(NoFailureType))), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
+      verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Seq(itemStatus)), eqTo(Some(FailureTypeQuery.None)), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
     }
 
     "must redirect to login when the user is not authenticated" in {

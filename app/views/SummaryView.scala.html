@@ -60,7 +60,7 @@
                 <tr class="govuk-table__row">
                   <th scope="col" class="govuk-table__header">@messages("failureType.timeout")</th>
                   <td class="govuk-table__cell govuk-table__cell--numeric">
-                    <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(Right(SubmissionItem.FailureType.Timeout)))">
+                    <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.These(SubmissionItem.FailureType.Timeout)))">
                       @summaryResponse.errors.timeoutFailureCount
                     </a>
                   </td>
@@ -75,7 +75,7 @@
                 <tr class="govuk-table__row">
                   <th scope="col" class="govuk-table__header">@messages("failureType.sdes")</th>
                     <td class="govuk-table__cell govuk-table__cell--numeric">
-                      <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(Right(SubmissionItem.FailureType.Sdes)))">
+                      <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.These(SubmissionItem.FailureType.Sdes)))">
                         @summaryResponse.errors.sdesFailureCount
                       </a>
                     </td>
@@ -108,12 +108,12 @@
           </td>
           <td class="govuk-table__cell govuk-table__cell--numeric">
             @if(summary.completed == 0) { 0 } else {
-              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(Left(NoFailureType)), Some(summary.date))">@summary.completed</a>
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.None), Some(summary.date))">@summary.completed</a>
             }
           </td>
           <td class="govuk-table__cell govuk-table__cell--numeric">
             @if(summary.failed == 0) { 0 } else {
-              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(Right(SubmissionItem.FailureType.Sdes)), Some(summary.date))">@summary.failed</a>
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.IsSet), Some(summary.date))">@summary.failed</a>
             }
           </td>
         </tr>

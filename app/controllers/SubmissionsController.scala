@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.DmsSubmissionConnector
-import models.{NoFailureType, SubmissionItem, SubmissionItemStatus}
+import models.{FailureTypeQuery, SubmissionItemStatus}
 import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -59,7 +59,7 @@ class SubmissionsController @Inject()(
   def onPageLoad(
                   service: String,
                   status: Seq[SubmissionItemStatus],
-                  failureType: Option[Either[NoFailureType, SubmissionItem.FailureType]],
+                  failureType: Option[FailureTypeQuery],
                   created: Option[LocalDate],
                   offset: Option[Int]
                 ): Action[AnyContent] = authorised(service, read).async { implicit request =>

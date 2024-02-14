@@ -8,7 +8,7 @@ GET         /assets/*file                                controllers.Assets.vers
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
-GET         /:service/submissions                       controllers.SubmissionsController.onPageLoad(service: String, status: Seq[SubmissionItemStatus] ?= Seq.empty, failureType: Option[Either[NoFailureType, SubmissionItem.FailureType]] ?= None, created: Option[LocalDate] ?= None, offset: Option[Int] ?= None)
+GET         /:service/submissions                       controllers.SubmissionsController.onPageLoad(service: String, status: Seq[SubmissionItemStatus] ?= Seq.empty, failureType: Option[FailureTypeQuery] ?= None, created: Option[LocalDate] ?= None, offset: Option[Int] ?= None)
 GET         /:service/submissions/summaries             controllers.DailySummaryController.dailySummaries(service: String)
 GET         /:service/submissions/summary               controllers.SummaryController.onPageLoad(service: String)
 GET         /:service/submissions/:id                   controllers.SubmissionController.onPageLoad(service: String, id: String)

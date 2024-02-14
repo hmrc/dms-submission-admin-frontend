@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DailySummary, DailySummaryResponse, DailySummaryV2, ErrorSummary, ListResult, ListServicesResult, NoFailureType, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary, SummaryResponse}
+import models.{DailySummary, DailySummaryResponse, DailySummaryV2, ErrorSummary, FailureTypeQuery, ListResult, ListServicesResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary, SummaryResponse}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -149,7 +149,7 @@ class DmsSubmissionConnectorSpec
       connector.list(
         serviceName,
         status = Seq(SubmissionItemStatus.Completed, SubmissionItemStatus.Failed),
-        failureType = Some(Left(NoFailureType)),
+        failureType = Some(FailureTypeQuery.None),
         created = Some(LocalDate.of(2022, 2, 1)),
         limit = Some(10),
         offset = Some(5)
