@@ -39,7 +39,7 @@
 @govukLayout(
   pageTitle = pageTitle,
   headBlock = Some(head),
-  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("service.name"))))),
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceUrl = "/dms-submission-admin-frontend", serviceName = Some(messages("service.name"))))),
   beforeContentBlock = Some(beforeContent),
   mainContentLayout = Some(pageLayout)
 )(contentBlock)
