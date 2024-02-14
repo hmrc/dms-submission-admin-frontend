@@ -101,6 +101,12 @@ summary.count = Count
 summary.action = Action
 summary.retryAll = Resend all
 
+confirmRetryTimeouts.title = Are you sure you want to retry all timed out submissions for {0}?
+confirmRetryTimeouts.heading = Are you sure you want to retry all timed out submissions for {0}?
+confirmRetryTimeouts.error.required = Select whether you want to retry all timeouts for {0}
+confirmRetryTimeouts.success.heading = Success
+confirmRetryTimeouts.success.message = All timed out submissions have been resubmitted
+
 failureType.timeout = Timeout
 failureType.sdes = SDES
 

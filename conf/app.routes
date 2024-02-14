@@ -11,5 +11,7 @@ GET         /unauthorised                                controllers.Unauthorise
 GET         /:service/submissions                       controllers.SubmissionsController.onPageLoad(service: String, status: Seq[SubmissionItemStatus] ?= Seq.empty, failureType: Option[FailureTypeQuery] ?= None, created: Option[LocalDate] ?= None, offset: Option[Int] ?= None)
 GET         /:service/submissions/summaries             controllers.DailySummaryController.dailySummaries(service: String)
 GET         /:service/submissions/summary               controllers.SummaryController.onPageLoad(service: String)
+GET         /:service/submissions/retry-timeouts        controllers.ConfirmRetryTimeoutController.onPageLoad(service)
+POST        /:service/submissions/retry-timeouts        controllers.ConfirmRetryTimeoutController.onSubmit(service)
 GET         /:service/submissions/:id                   controllers.SubmissionController.onPageLoad(service: String, id: String)
 POST        /:service/submissions/:id/retry             controllers.SubmissionController.retry(service, id)
