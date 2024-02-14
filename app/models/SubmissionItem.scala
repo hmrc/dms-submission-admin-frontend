@@ -16,6 +16,7 @@
 
 package models
 
+import models.SubmissionItem.FailureType
 import play.api.libs.json.{Format, JsString, Json, OFormat, Reads, Writes, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -28,6 +29,7 @@ final case class SubmissionItem(
                                  callbackUrl: String,
                                  status: SubmissionItemStatus,
                                  objectSummary: ObjectSummary,
+                                 failureType: Option[FailureType],
                                  failureReason: Option[String],
                                  sdesCorrelationId: String,
                                  created: Instant,

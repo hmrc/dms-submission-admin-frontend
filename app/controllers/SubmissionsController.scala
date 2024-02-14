@@ -64,7 +64,7 @@ class SubmissionsController @Inject()(
                   offset: Option[Int]
                 ): Action[AnyContent] = authorised(service, read).async { implicit request =>
     connector.list(service, status, failureType, created, Some(limit), offset).map { listResult =>
-      Ok(view(service, listResult.summaries, status, created, limit, offset.getOrElse(0), listResult.totalCount))
+      Ok(view(service, listResult.summaries, status, failureType, created, limit, offset.getOrElse(0), listResult.totalCount))
     }
   }
 }

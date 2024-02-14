@@ -67,6 +67,7 @@ class DmsSubmissionConnectorSpec
         contentMd5 = "hash",
         lastModified = clock.instant().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS)
       ),
+      failureType = None,
       failureReason = None,
       created = clock.instant().truncatedTo(ChronoUnit.SECONDS),
       lastUpdated = clock.instant().truncatedTo(ChronoUnit.SECONDS),
@@ -116,8 +117,8 @@ class DmsSubmissionConnectorSpec
     val listResult = ListResult(
       totalCount = 2,
       List(
-        SubmissionSummary("id1", "Submitted", None, Instant.now.truncatedTo(ChronoUnit.MILLIS)),
-        SubmissionSummary("id2", "Processed", None, Instant.now.truncatedTo(ChronoUnit.MILLIS))
+        SubmissionSummary("id1", "Submitted", None, None, Instant.now.truncatedTo(ChronoUnit.MILLIS)),
+        SubmissionSummary("id2", "Processed", None, None, Instant.now.truncatedTo(ChronoUnit.MILLIS))
       )
     )
 

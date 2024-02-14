@@ -26,6 +26,7 @@
         service: String,
         submissions: Seq[SubmissionSummary],
         status: Seq[SubmissionItemStatus],
+        failureType: Option[FailureTypeQuery],
         created: Option[LocalDate],
         limit: Int,
         offset: Int,
@@ -64,6 +65,13 @@
         @created.map { created =>
           <li>@messages("submissions.filter.created", date(created))</li>
         }
+        @failureType.map { query =>
+          @query match {
+            case FailureTypeQuery.None => { <li>@messages("submissions.filter.failureType.none")</li> }
+            case FailureTypeQuery.IsSet => { <li>@messages("submissions.filter.failureType.set")</li> }
+            case FailureTypeQuery.These(types @ _*) => { <li>@messages("submissions.filter.failureType.these", types.map(t => messages(s"submissions.failureType.$t")).mkString(", "))</li> }
+          }
+        }
       </ul>
     }
 
@@ -74,6 +82,9 @@
             <th class="govuk-table__header" scope="col">@messages("submissions.id")</th>
             @if(created.isEmpty) {
               <th class="govuk-table__header" scope="col">@messages("submissions.status")</th>
+            }
+            @if(submissions.exists(_.failureType.isDefined)) {
+              <th class="govuk-table__header" scope="col">@messages("submissions.failureType")</th>
             }
             @if(submissions.exists(_.failureReason.isDefined)) {
               <th class="govuk-table__header" scope="col">@messages("submissions.failureReason")</th>
@@ -91,6 +102,9 @@
               </th>
               @if(created.isEmpty) {
                 <th class="govuk-table__header" scope="row">@submission.status</th>
+              }
+              @if(submissions.exists(_.failureType.isDefined)) {
+                <td class="govuk-table__cell">@submission.failureType.map(t => messages(s"submissions.failureType.$t"))</td>
               }
               @if(submissions.exists(_.failureReason.isDefined)) {
                 <td class="govuk-table__cell">@submission.failureReason</td>

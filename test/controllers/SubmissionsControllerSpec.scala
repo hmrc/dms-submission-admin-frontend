@@ -81,8 +81,8 @@ class SubmissionsControllerSpec
     val listResult = ListResult(
       totalCount = 2,
       List(
-        SubmissionSummary("id1", "Submitted", None, Instant.now),
-        SubmissionSummary("id2", "Processed", None, Instant.now)
+        SubmissionSummary("id1", "Submitted", None, None, Instant.now),
+        SubmissionSummary("id2", "Processed", None, None, Instant.now)
       )
     )
 
@@ -100,7 +100,7 @@ class SubmissionsControllerSpec
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, listResult.summaries, Seq.empty, None, 50, 0, listResult.totalCount)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, listResult.summaries, Seq.empty, None, None, 50, 0, listResult.totalCount)(request, implicitly).toString
     }
 
     "must use the parameters from the url when calling dms submission" in {
@@ -128,7 +128,7 @@ class SubmissionsControllerSpec
       val view = app.injector.instanceOf[SubmissionsView]
 
       status(result) mustEqual OK
-      contentAsString(result) mustEqual view(serviceName, listResult.summaries, Seq(itemStatus), Some(created), 50, 5, listResult.totalCount)(request, implicitly).toString
+      contentAsString(result) mustEqual view(serviceName, listResult.summaries, Seq(itemStatus), Some(FailureTypeQuery.None), Some(created), 50, 5, listResult.totalCount)(request, implicitly).toString
       verify(mockDmsSubmissionConnector).list(eqTo(serviceName), eqTo(Seq(itemStatus)), eqTo(Some(FailureTypeQuery.None)), eqTo(Some(created)), eqTo(Some(50)), eqTo(Some(5)))(any())
     }
 

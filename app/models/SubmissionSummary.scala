@@ -16,6 +16,7 @@
 
 package models
 
+import models.SubmissionItem.FailureType
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -24,6 +25,7 @@ import java.time.Instant
 final case class SubmissionSummary(
                                     id: String,
                                     status: String,
+                                    failureType: Option[FailureType],
                                     failureReason: Option[String],
                                     lastUpdated: Instant
                                   )

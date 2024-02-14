@@ -56,10 +56,16 @@ submissions.none = There are no submissions for this service.
 submissions.filters = Filtered by
 submissions.filter.status = Status of {0}
 submissions.filter.created = Created on {0}
+submissions.filter.failureType.none = No failure type
+submissions.filter.failureType.set = All failure types
+submissions.filter.failureType.these = Failure types of {0}
 submissions.id = Id
 submissions.status = Status
 submissions.lastUpdated = Last updated
 submissions.failureReason = Failure reason
+submissions.failureType = Failure type
+submissions.failureType.Sdes = SDES
+submissions.failureType.Timeout = Timeout
 
 dailySummaries.title = Daily submissions
 dailySummaries.heading = Daily submissions
@@ -67,9 +73,12 @@ dailySummaries.heading = Daily submissions
 status.submitted = Submitted
 status.forwarded = Forwarded
 status.processed = Processed
-status.processing = Processing
 status.completed = Completed
 status.failed = Failed
+
+statusType.processing = Processing
+statusType.successful = Successful
+statusType.failed = Failed
 
 submission.title = Submission
 submission.heading = Submission
