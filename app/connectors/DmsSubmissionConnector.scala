@@ -95,6 +95,18 @@ class DmsSubmissionConnector @Inject()(
         }
       }
 
+  def retryTimeouts(serviceName: String)(implicit hc: HeaderCarrier): Future[Done] =
+    httpClient
+      .post(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/retry-timeouts")
+      .execute
+      .flatMap { response =>
+        if (response.status == ACCEPTED) {
+          Future.successful(Done)
+        } else {
+          Future.failed(UpstreamErrorResponse("Unexpected response to retry-timeouts request", response.status))
+        }
+      }
+
   def listServices(implicit hc: HeaderCarrier): Future[Set[String]] =
     httpClient
       .get(url"${dmsSubmissionService.baseUrl}/dms-submission/services")

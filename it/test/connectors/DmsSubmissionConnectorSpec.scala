@@ -285,6 +285,43 @@ class DmsSubmissionConnectorSpec
     }
   }
 
+  "retryTimeouts" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val url = s"/dms-submission/$serviceName/retry-timeouts"
+
+    "must return successfully when the server responds with ACCEPTED" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(ACCEPTED))
+      )
+
+      connector.retryTimeouts(serviceName)(hc).futureValue
+    }
+
+    "must fail when the server responds with NOT_FOUND" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(NOT_FOUND))
+      )
+
+      connector.retryTimeouts(serviceName)(hc).failed.futureValue
+    }
+
+    "must fail when the server responds with SERVER_ERROR" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.retryTimeouts(serviceName)(hc).failed.futureValue
+    }
+  }
+
   "listServices" - {
 
     val hc = HeaderCarrier()
