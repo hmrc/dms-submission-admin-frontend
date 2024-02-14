@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{DailySummary, DailySummaryResponse, ListResult, ListServicesResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary}
+import models.{DailySummary, DailySummaryResponse, DailySummaryV2, ErrorSummary, FailureTypeQuery, ListResult, ListServicesResult, ObjectSummary, SubmissionItem, SubmissionItemStatus, SubmissionSummary, SummaryResponse}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -67,6 +67,7 @@ class DmsSubmissionConnectorSpec
         contentMd5 = "hash",
         lastModified = clock.instant().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS)
       ),
+      failureType = None,
       failureReason = None,
       created = clock.instant().truncatedTo(ChronoUnit.SECONDS),
       lastUpdated = clock.instant().truncatedTo(ChronoUnit.SECONDS),
@@ -116,8 +117,8 @@ class DmsSubmissionConnectorSpec
     val listResult = ListResult(
       totalCount = 2,
       List(
-        SubmissionSummary("id1", "Submitted", None, Instant.now.truncatedTo(ChronoUnit.MILLIS)),
-        SubmissionSummary("id2", "Processed", None, Instant.now.truncatedTo(ChronoUnit.MILLIS))
+        SubmissionSummary("id1", "Submitted", None, None, Instant.now.truncatedTo(ChronoUnit.MILLIS)),
+        SubmissionSummary("id2", "Processed", None, None, Instant.now.truncatedTo(ChronoUnit.MILLIS))
       )
     )
 
@@ -138,7 +139,9 @@ class DmsSubmissionConnectorSpec
       wireMockServer.stubFor(
         get(urlPathMatching(url))
           .withQueryParam("status", equalTo("completed"))
+          .withQueryParam("status", equalTo("failed"))
           .withQueryParam("created", equalTo("2022-02-01"))
+          .withQueryParam("failureType", equalTo("none"))
           .withQueryParam("limit", equalTo("10"))
           .withQueryParam("offset", equalTo("5"))
           .willReturn(ok(Json.toJson(listResult).toString))
@@ -146,7 +149,8 @@ class DmsSubmissionConnectorSpec
 
       connector.list(
         serviceName,
-        status = Some(SubmissionItemStatus.Completed),
+        status = Seq(SubmissionItemStatus.Completed, SubmissionItemStatus.Failed),
+        failureType = Some(FailureTypeQuery.None),
         created = Some(LocalDate.of(2022, 2, 1)),
         limit = Some(10),
         offset = Some(5)
@@ -202,6 +206,47 @@ class DmsSubmissionConnectorSpec
     }
   }
 
+  "summary" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val url = s"/dms-submission/$serviceName/submissions/summary"
+
+    "must return a service summary when the server returns one" in {
+
+      val summaries = List(
+        DailySummaryV2(LocalDate.of(2022, 1, 2), 1, 2, 3),
+        DailySummaryV2(LocalDate.of(2022, 1, 1), 6, 7, 8)
+      )
+
+      val errorSummary = ErrorSummary(1, 2)
+
+      val json = Json.obj(
+        "errors" -> errorSummary,
+        "summaries" -> summaries
+      )
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(ok(json.toString))
+      )
+
+      val result = connector.summary(serviceName)(hc).futureValue
+
+      result mustEqual SummaryResponse(errorSummary, summaries)
+    }
+
+    "must return a failed future when the server returns an error" in {
+
+      wireMockServer.stubFor(
+        get(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.summary(serviceName)(hc).failed.futureValue
+    }
+  }
+
   "retry" - {
 
     val hc = HeaderCarrier()
@@ -237,6 +282,43 @@ class DmsSubmissionConnectorSpec
       )
 
       connector.retry(serviceName, id)(hc).failed.futureValue
+    }
+  }
+
+  "retryTimeouts" - {
+
+    val hc = HeaderCarrier()
+    val serviceName = "service-name"
+    val url = s"/dms-submission/$serviceName/retry-timeouts"
+
+    "must return successfully when the server responds with ACCEPTED" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(ACCEPTED))
+      )
+
+      connector.retryTimeouts(serviceName)(hc).futureValue
+    }
+
+    "must fail when the server responds with NOT_FOUND" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(status(NOT_FOUND))
+      )
+
+      connector.retryTimeouts(serviceName)(hc).failed.futureValue
+    }
+
+    "must fail when the server responds with SERVER_ERROR" in {
+
+      wireMockServer.stubFor(
+        post(urlMatching(url))
+          .willReturn(serverError())
+      )
+
+      connector.retryTimeouts(serviceName)(hc).failed.futureValue
     }
   }
 

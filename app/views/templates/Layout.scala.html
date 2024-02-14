@@ -30,10 +30,16 @@
   }
 }
 
+@head = {
+  @hmrcInternalHead()
+  <link href="@routes.Assets.versioned("stylesheets/application.css")" media="all" rel="stylesheet" type="text/css" />
+  <script src="@routes.Assets.versioned("javascripts/app.js")"></script>
+}
+
 @govukLayout(
   pageTitle = pageTitle,
-  headBlock = Some(hmrcInternalHead()),
-  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("service.name"))))),
+  headBlock = Some(head),
+  headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceUrl = "/dms-submission-admin-frontend", serviceName = Some(messages("service.name"))))),
   beforeContentBlock = Some(beforeContent),
   mainContentLayout = Some(pageLayout)
 )(contentBlock)

@@ -1,0 +1,123 @@
+@*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout
+)
+
+@(service: String, summaryResponse: SummaryResponse)(implicit request: Request[_], messages: Messages)
+
+  @pageLayout(contentBlock: Html) = {
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+      @contentBlock
+      </div>
+    </div>
+  }
+
+  @layout(
+    pageTitle = Some(titleNoForm(messages("dailySummaries.title"))),
+    pageLayout = pageLayout
+  ) {
+
+    <header class="hmrc-page-heading">
+      <h1 class="govuk-heading-l">@messages("dailySummaries.heading")</h1>
+      <p class="hmrc-caption govuk-caption-l">@service</p>
+    </header>
+
+    @if(summaryResponse.errors.sdesFailureCount > 0 || summaryResponse.errors.timeoutFailureCount > 0) {
+      <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            @messages("site.important")
+          </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">@messages("summary.errors")</p>
+          <table class="govuk-body govuk-table full-max-width">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">@messages("summary.failureType")</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("summary.count")</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("summary.action")</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              @if(summaryResponse.errors.timeoutFailureCount > 0) {
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">@messages("failureType.timeout")</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">
+                    <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.These(SubmissionItem.FailureType.Timeout)))">
+                      @summaryResponse.errors.timeoutFailureCount
+                    </a>
+                  </td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">
+                    <a class="govuk-button govuk-!-margin-bottom-0" href="@routes.ConfirmRetryTimeoutController.onPageLoad(service)">
+                      @messages("summary.retryAll")
+                    </a>
+                  </td>
+                </tr>
+              }
+              @if(summaryResponse.errors.sdesFailureCount > 0) {
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">@messages("failureType.sdes")</th>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                      <a class="guvk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.These(SubmissionItem.FailureType.Sdes)))">
+                        @summaryResponse.errors.sdesFailureCount
+                      </a>
+                    </td>
+                  <td class="govuk-table__cell"></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <table class="govuk-body govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Date</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("statusType.processing")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("statusType.successful")</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("statusType.failed")</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      @summaryResponse.summaries.sortBy(_.date).reverse.map { summary =>
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header">@date(summary.date)</th>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.processing == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Submitted, SubmissionItemStatus.Forwarded, SubmissionItemStatus.Processed, SubmissionItemStatus.Failed), None, Some(summary.date))">@summary.processing</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.completed == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.None), Some(summary.date))">@summary.completed</a>
+            }
+          </td>
+          <td class="govuk-table__cell govuk-table__cell--numeric">
+            @if(summary.failed == 0) { 0 } else {
+              <a class="govuk-link" href="@routes.SubmissionsController.onPageLoad(service, Seq(SubmissionItemStatus.Completed), Some(FailureTypeQuery.IsSet), Some(summary.date))">@summary.failed</a>
+            }
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }

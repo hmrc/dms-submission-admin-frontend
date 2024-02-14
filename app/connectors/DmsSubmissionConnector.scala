@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import models.{DailySummaryResponse, Done, ListResult, ListServicesResult, SubmissionItem, SubmissionItemStatus, javaLocalDateQueryStringBindable}
+import models.{DailySummaryResponse, Done, FailureTypeQuery, ListResult, ListServicesResult, SubmissionItem, SubmissionItemStatus, SummaryResponse, javaLocalDateQueryStringBindable}
 import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.QueryStringBindable
@@ -44,7 +44,8 @@ class DmsSubmissionConnector @Inject()(
 
   def list(
             serviceName: String,
-            status: Option[SubmissionItemStatus] = None,
+            status: Seq[SubmissionItemStatus] = Seq.empty,
+            failureType: Option[FailureTypeQuery] = None,
             created: Option[LocalDate] = None,
             limit: Option[Int] = None,
             offset: Option[Int] = None
@@ -53,10 +54,12 @@ class DmsSubmissionConnector @Inject()(
     val localDateBinder: QueryStringBindable[LocalDate] = implicitly
     val statusBinder: QueryStringBindable[SubmissionItemStatus] = implicitly
     val intBinder: QueryStringBindable[Int] = implicitly
+    val failureTypeBinder: QueryStringBindable[FailureTypeQuery] = implicitly
 
     val params = List(
       status.map(statusBinder.unbind("status", _)),
       created.map(localDateBinder.unbind("created", _)),
+      failureType.map(failureTypeBinder.unbind("failureType", _)),
       limit.map(intBinder.unbind("limit", _)),
       offset.map(intBinder.unbind("offset", _))
     ).flatten
@@ -75,6 +78,11 @@ class DmsSubmissionConnector @Inject()(
       .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summaries")
       .execute[DailySummaryResponse]
 
+  def summary(serviceName: String)(implicit hc: HeaderCarrier): Future[SummaryResponse] =
+    httpClient
+      .get(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/summary")
+      .execute[SummaryResponse]
+
   def retry(serviceName: String, id: String)(implicit hc: HeaderCarrier): Future[Done] =
     httpClient
       .post(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/submissions/$id/retry")
@@ -84,6 +92,18 @@ class DmsSubmissionConnector @Inject()(
           Future.successful(Done)
         } else {
           Future.failed(UpstreamErrorResponse("Unexpected response to retry request", response.status))
+        }
+      }
+
+  def retryTimeouts(serviceName: String)(implicit hc: HeaderCarrier): Future[Done] =
+    httpClient
+      .post(url"${dmsSubmissionService.baseUrl}/dms-submission/$serviceName/retry-timeouts")
+      .execute
+      .flatMap { response =>
+        if (response.status == ACCEPTED) {
+          Future.successful(Done)
+        } else {
+          Future.failed(UpstreamErrorResponse("Unexpected response to retry-timeouts request", response.status))
         }
       }
 

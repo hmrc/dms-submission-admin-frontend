@@ -22,24 +22,24 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.DailySummariesView
+import views.html.SummaryView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class DailySummaryController @Inject()(
-                                        val controllerComponents: MessagesControllerComponents,
-                                        auth: FrontendAuthComponents,
-                                        view: DailySummariesView,
-                                        connector: DmsSubmissionConnector
-                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class SummaryController @Inject()(
+                                   val controllerComponents: MessagesControllerComponents,
+                                   auth: FrontendAuthComponents,
+                                   view: SummaryView,
+                                   connector: DmsSubmissionConnector
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
   private val read = IAAction("READ")
 
   private val authorised = (service: String, action: IAAction) =>
     auth.authorizedAction(
-      continueUrl = routes.DailySummaryController.dailySummaries(service),
+      continueUrl = routes.SummaryController.onPageLoad(service),
       predicate = Permission(
         Resource(
           ResourceType("dms-submission"),
@@ -50,8 +50,8 @@ class DailySummaryController @Inject()(
       retrieval = Retrieval.username
     )
 
-  def dailySummaries(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
-    connector.dailySummaries(service).map { response =>
+  def onPageLoad(service: String): Action[AnyContent] = authorised(service, read).async { implicit request =>
+    connector.summary(service).map { response =>
       Ok(view(service, response))
     }
   }

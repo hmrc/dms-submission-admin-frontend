@@ -65,6 +65,12 @@
       <dt class="govuk-summary-list__key">@messages("submission.status")</dt>
       <dd>@submission.status</dd>
     </div>
+    @submission.failureType.map { failureType =>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">@messages("submission.failureType")</dt>
+        <dd>@messages(s"submission.failureType.$failureType")</dd>
+      </div>
+    }
     @submission.failureReason.map { failureReason =>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">@messages("submission.failureReason")</dt>

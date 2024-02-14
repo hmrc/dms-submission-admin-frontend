@@ -16,21 +16,23 @@
 
 package models
 
-import models.SubmissionItem.FailureType
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Instant
+import java.time.LocalDate
 
-final case class SubmissionSummary(
-                                    id: String,
-                                    status: String,
-                                    failureType: Option[FailureType],
-                                    failureReason: Option[String],
-                                    lastUpdated: Instant
-                                  )
+final case class DailySummaryV2(
+                                 date: LocalDate,
+                                 processing: Int,
+                                 completed: Int,
+                                 failed: Int
+                               )
 
-object SubmissionSummary extends MongoJavatimeFormats.Implicits {
+object DailySummaryV2 {
 
-  implicit lazy val format: OFormat[SubmissionSummary] = Json.format
+  implicit lazy val format: OFormat[DailySummaryV2] = Json.format
+
+  lazy val mongoFormat: OFormat[DailySummaryV2] = {
+    // Intellij thinks this is not required, but it's required by the macro expansion of `Json.format`
+    Json.format
+  }
 }

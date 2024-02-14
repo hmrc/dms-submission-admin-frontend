@@ -10,6 +10,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.important = Important
 
 global.error.forbidden403.title = You are not authorised to access this page
 global.error.forbidden403.heading = You are not authorised to access this page
@@ -55,10 +56,16 @@ submissions.none = There are no submissions for this service.
 submissions.filters = Filtered by
 submissions.filter.status = Status of {0}
 submissions.filter.created = Created on {0}
+submissions.filter.failureType.none = No failure type
+submissions.filter.failureType.set = All failure types
+submissions.filter.failureType.these = Failure types of {0}
 submissions.id = Id
 submissions.status = Status
 submissions.lastUpdated = Last updated
 submissions.failureReason = Failure reason
+submissions.failureType = Failure type
+submissions.failureType.Sdes = SDES
+submissions.failureType.Timeout = Timeout
 
 dailySummaries.title = Daily submissions
 dailySummaries.heading = Daily submissions
@@ -69,6 +76,10 @@ status.processed = Processed
 status.completed = Completed
 status.failed = Failed
 
+statusType.processing = Processing
+statusType.successful = Successful
+statusType.failed = Failed
+
 submission.title = Submission
 submission.heading = Submission
 submission.id = Id
@@ -77,9 +88,27 @@ submission.status = Status
 submission.createdAt = Created at
 submission.lastUpdated = Last updated
 submission.failureReason = Failure reason
+submission.failureType = Failure type
+submission.failureType.Sdes = SDES
+submission.failureType.Timeout = Timeout
 submission.retry = Resend submission
 submission.success = Success
 submission.retryComplete = Retry submitted for {0}
+
+summary.errors = Your service has failed submissions
+summary.failureType = Failure type
+summary.count = Count
+summary.action = Action
+summary.retryAll = Resend all
+
+confirmRetryTimeouts.title = Are you sure you want to retry all timed out submissions for {0}?
+confirmRetryTimeouts.heading = Are you sure you want to retry all timed out submissions for {0}?
+confirmRetryTimeouts.error.required = Select whether you want to retry all timeouts for {0}
+confirmRetryTimeouts.success.heading = Success
+confirmRetryTimeouts.success.message = All timed out submissions have been resubmitted
+
+failureType.timeout = Timeout
+failureType.sdes = SDES
 
 pagination.previous = Previous
 pagination.next = Next

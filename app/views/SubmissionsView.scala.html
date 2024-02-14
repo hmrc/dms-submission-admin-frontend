@@ -25,7 +25,8 @@
 @(
         service: String,
         submissions: Seq[SubmissionSummary],
-        status: Option[SubmissionItemStatus],
+        status: Seq[SubmissionItemStatus],
+        failureType: Option[FailureTypeQuery],
         created: Option[LocalDate],
         limit: Int,
         offset: Int,
@@ -64,6 +65,13 @@
         @created.map { created =>
           <li>@messages("submissions.filter.created", date(created))</li>
         }
+        @failureType.map { query =>
+          @query match {
+            case FailureTypeQuery.None => { <li>@messages("submissions.filter.failureType.none")</li> }
+            case FailureTypeQuery.IsSet => { <li>@messages("submissions.filter.failureType.set")</li> }
+            case FailureTypeQuery.These(types @ _*) => { <li>@messages("submissions.filter.failureType.these", types.map(t => messages(s"submissions.failureType.$t")).mkString(", "))</li> }
+          }
+        }
       </ul>
     }
 
@@ -74,6 +82,9 @@
             <th class="govuk-table__header" scope="col">@messages("submissions.id")</th>
             @if(created.isEmpty) {
               <th class="govuk-table__header" scope="col">@messages("submissions.status")</th>
+            }
+            @if(submissions.exists(_.failureType.isDefined)) {
+              <th class="govuk-table__header" scope="col">@messages("submissions.failureType")</th>
             }
             @if(submissions.exists(_.failureReason.isDefined)) {
               <th class="govuk-table__header" scope="col">@messages("submissions.failureReason")</th>
@@ -92,6 +103,9 @@
               @if(created.isEmpty) {
                 <th class="govuk-table__header" scope="row">@submission.status</th>
               }
+              @if(submissions.exists(_.failureType.isDefined)) {
+                <td class="govuk-table__cell">@submission.failureType.map(t => messages(s"submissions.failureType.$t"))</td>
+              }
               @if(submissions.exists(_.failureReason.isDefined)) {
                 <td class="govuk-table__cell">@submission.failureReason</td>
               }
@@ -105,7 +119,7 @@
 
         @if(offset > 0) {
           <div class="govuk-pagination__prev">
-            <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, created, Some(offset - limit))" rel="prev">
+            <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, failureType, created, Some(offset - limit))" rel="prev">
               <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                 <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
               </svg>
@@ -116,7 +130,7 @@
 
           @if(currentPage > 2) {
             <li class="govuk-pagination__item">
-              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, created, None)" aria-label="Page 1">
+              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, failureType, created, None)" aria-label="Page 1">
                 1
               </a>
             </li>
@@ -127,7 +141,7 @@
 
           @for(i <- (currentPage - 1).max(1) to (currentPage + 1).min(totalCount / limit)) {
             <li class="govuk-pagination__item @if(i == currentPage) {govuk-pagination__item--current}">
-              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, created, Some((i - 1) * limit))" aria-label="Page @i" aria-current="page">
+              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, failureType, created, Some((i - 1) * limit))" aria-label="Page @i" aria-current="page">
                 @i
               </a>
             </li>
@@ -139,7 +153,7 @@
 
           @if(currentPage < lastPage - 1) {
             <li class="govuk-pagination__item">
-              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, created, Some(totalCount - limit))" aria-label="Page @{totalCount / limit}">
+              <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, failureType, created, Some(totalCount - limit))" aria-label="Page @{totalCount / limit}">
               @{totalCount / limit}
               </a>
             </li>
@@ -149,7 +163,7 @@
 
         @if(offset < totalCount - limit) {
           <div class="govuk-pagination__next">
-            <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, created, Some(offset + limit))" rel="next"> <span class="govuk-pagination__link-title">@messages("pagination.next")</span> <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <a class="govuk-link govuk-pagination__link" href="@routes.SubmissionsController.onPageLoad(service, status, failureType, created, Some(offset + limit))" rel="next"> <span class="govuk-pagination__link-title">@messages("pagination.next")</span> <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
               <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
             </svg></a>
           </div>

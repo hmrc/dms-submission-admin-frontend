@@ -35,7 +35,7 @@
 
       <ul class="govuk-list govuk-list--bullet">
       @authorisedServices.toList.map { service =>
-        <li><a href="@routes.DailySummaryController.dailySummaries(service)" class="govuk-link">
+        <li><a href="@routes.SummaryController.onPageLoad(service)" class="govuk-link">
         @service
         </a></li>
       }

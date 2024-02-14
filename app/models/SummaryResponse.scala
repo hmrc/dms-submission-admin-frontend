@@ -16,21 +16,11 @@
 
 package models
 
-import models.SubmissionItem.FailureType
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Instant
+final case class SummaryResponse(errors: ErrorSummary, summaries: Seq[DailySummaryV2])
 
-final case class SubmissionSummary(
-                                    id: String,
-                                    status: String,
-                                    failureType: Option[FailureType],
-                                    failureReason: Option[String],
-                                    lastUpdated: Instant
-                                  )
+object SummaryResponse {
 
-object SubmissionSummary extends MongoJavatimeFormats.Implicits {
-
-  implicit lazy val format: OFormat[SubmissionSummary] = Json.format
+  implicit lazy val format: OFormat[SummaryResponse] = Json.format
 }

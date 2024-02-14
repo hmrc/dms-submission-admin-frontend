@@ -16,7 +16,8 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import models.SubmissionItem.FailureType
+import play.api.libs.json.{Format, JsString, Json, OFormat, Reads, Writes, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
@@ -28,6 +29,7 @@ final case class SubmissionItem(
                                  callbackUrl: String,
                                  status: SubmissionItemStatus,
                                  objectSummary: ObjectSummary,
+                                 failureType: Option[FailureType],
                                  failureReason: Option[String],
                                  sdesCorrelationId: String,
                                  created: Instant,
@@ -36,6 +38,30 @@ final case class SubmissionItem(
                                )
 
 object SubmissionItem extends MongoJavatimeFormats.Implicits {
+
+  sealed trait FailureType extends Product with Serializable
+
+  object FailureType {
+
+    case object Timeout extends FailureType
+    case object Sdes extends FailureType
+
+    lazy val reads: Reads[FailureType] =
+      __.read[String].flatMap {
+        case "timeout" => Reads.pure(Timeout)
+        case "sdes" => Reads.pure(Sdes)
+        case other => Reads.failed(s"invalid failure type: $other")
+      }
+
+    lazy val writes: Writes[FailureType] =
+      Writes {
+        case Timeout => JsString("timeout")
+        case Sdes => JsString("sdes")
+      }
+
+    implicit lazy val format: Format[FailureType] =
+      Format(reads, writes)
+  }
 
   implicit lazy val format: OFormat[SubmissionItem] = Json.format
 }
