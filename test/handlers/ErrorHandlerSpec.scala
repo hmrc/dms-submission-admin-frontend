@@ -27,6 +27,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class ErrorHandlerSpec extends AnyFreeSpec with Matchers with ScalaFutures with OptionValues with GuiceOneAppPerSuite {
 
   private lazy val handler = app.injector.instanceOf[ErrorHandler]
@@ -44,7 +46,7 @@ class ErrorHandlerSpec extends AnyFreeSpec with Matchers with ScalaFutures with 
       Messages("global.error.forbidden403.title"),
       Messages("global.error.forbidden403.heading"),
       Messages("global.error.forbidden403.message")
-    )(request).body
+    )(request).map(_.body).futureValue
 
     val result = handler.onServerError(request, error)
 
