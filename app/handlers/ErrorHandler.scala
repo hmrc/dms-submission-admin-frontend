@@ -26,26 +26,26 @@ import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 import views.html.ErrorTemplate
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ErrorHandler @Inject()(
                               val messagesApi: MessagesApi,
                               view: ErrorTemplate
-                            ) extends FrontendErrorHandler with I18nSupport {
+                            )(override implicit val ec: ExecutionContext) extends FrontendErrorHandler with I18nSupport {
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html =
-    view(pageTitle, heading, message)
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: RequestHeader): Future[Html] =
+    Future.successful(view(pageTitle, heading, message))
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] =
     exception match {
       case e: UpstreamErrorResponse if e.statusCode == FORBIDDEN =>
-        Future.successful(Forbidden(forbiddenErrorTemplate(Request(request, ""))))
+        forbiddenErrorTemplate(Request(request, "")).map(html => Forbidden(html))
       case _ =>
         super.onServerError(request, exception)
     }
 
-  private def forbiddenErrorTemplate(implicit request: Request[_]): Html =
+  private def forbiddenErrorTemplate(implicit request: Request[_]): Future[Html] =
     standardErrorTemplate(
       Messages("global.error.forbidden403.title"),
       Messages("global.error.forbidden403.heading"),

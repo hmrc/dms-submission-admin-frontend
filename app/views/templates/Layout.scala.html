@@ -22,7 +22,7 @@
         govukBackLink: GovukBackLink
 )
 
-@(pageTitle: Option[String] = None, showBackLink: Boolean = true, pageLayout: Html => Html = twoThirdsContent(_))(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(pageTitle: Option[String] = None, showBackLink: Boolean = true, pageLayout: Html => Html = twoThirdsContent(_))(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
 
 @beforeContent = {
   @if(showBackLink) {
