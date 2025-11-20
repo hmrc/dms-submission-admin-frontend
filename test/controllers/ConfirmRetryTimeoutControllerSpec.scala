@@ -16,11 +16,13 @@
 
 package controllers
 
+import auth.FrontendAuthStubProvider
 import connectors.DmsSubmissionConnector
 import forms.ConfirmRetryTimeoutFormProvider
 import models.{DailySummary, DailySummaryResponse, Done}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+//import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
@@ -55,11 +57,11 @@ class ConfirmRetryTimeoutControllerSpec
 
   private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
   private val mockStubBehaviour = mock[StubBehaviour]
-  private val stubFrontendAuthComponents = FrontendAuthComponentsStub(mockStubBehaviour)(Helpers.stubControllerComponents(), implicitly)
 
   private val app = GuiceApplicationBuilder()
     .overrides(
-      bind[FrontendAuthComponents].toInstance(stubFrontendAuthComponents),
+      bind[StubBehaviour].toInstance(mockStubBehaviour),
+      bind[FrontendAuthComponents].toProvider[FrontendAuthStubProvider],
       bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
     )
     .build()
@@ -100,7 +102,8 @@ class ConfirmRetryTimeoutControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fretry-timeouts"
+      val prefix = "http://localhost:8471/test-only/sign-in?test_only_base_url=http://localhost:9000&"
+      redirectLocation(result).value mustEqual s"${prefix}continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fretry-timeouts"
     }
 
     "must fail when the user is not authorised" in {
@@ -187,7 +190,8 @@ class ConfirmRetryTimeoutControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fretry-timeouts"
+      val prefix = "http://localhost:8471/test-only/sign-in?test_only_base_url=http://localhost:9000&"
+      redirectLocation(result).value mustEqual s"${prefix}continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fretry-timeouts"
     }
 
     "must fail when the user is not authorised" in {

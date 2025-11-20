@@ -19,7 +19,7 @@ package controllers
 import connectors.DmsSubmissionConnector
 import models.{Done, ObjectSummary, SubmissionItem, SubmissionItemStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.ScalaFutures
@@ -134,7 +134,8 @@ class SubmissionControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2F$id"
+      val prefix = "http://localhost:8471/test-only/sign-in?test_only_base_url=http://localhost:9000&"
+      redirectLocation(result).value mustEqual s"${prefix}continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2F$id"
     }
 
     "must fail when the user is not authorised" in {
@@ -189,7 +190,8 @@ class SubmissionControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2F$id"
+      val prefix = "http://localhost:8471/test-only/sign-in?test_only_base_url=http://localhost:9000&"
+      redirectLocation(result).value mustEqual s"${prefix}continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2F$id"
     }
 
     "must fail if the user is unauthorised" in {

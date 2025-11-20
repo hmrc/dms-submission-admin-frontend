@@ -87,7 +87,7 @@
     </div>
   </dl>
 
-  @formHelper(action = routes.SubmissionController.retry(service, submission.id), 'autocomplete -> "off") {
+  @formHelper(action = routes.SubmissionController.retry(service, submission.id), Symbol("autocomplete") -> "off") {
     <button class="govuk-button govuk-!-margin-top-6">@messages("submission.retry")</button>
   }
 }
