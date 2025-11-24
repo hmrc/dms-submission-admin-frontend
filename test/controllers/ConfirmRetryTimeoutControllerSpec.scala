@@ -21,7 +21,6 @@ import connectors.DmsSubmissionConnector
 import forms.ConfirmRetryTimeoutFormProvider
 import models.{DailySummary, DailySummaryResponse, Done}
 import org.mockito.ArgumentMatchers.any
-//import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
