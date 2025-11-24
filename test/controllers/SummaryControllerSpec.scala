@@ -19,7 +19,7 @@ package controllers
 import connectors.DmsSubmissionConnector
 import models.{DailySummaryV2, ErrorSummary, SummaryResponse}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
@@ -106,7 +106,8 @@ class SummaryControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual s"/internal-auth-frontend/sign-in?continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fsummary"
+      val prefix = "http://localhost:8471/test-only/sign-in?test_only_base_url=http://localhost:9000&"
+      redirectLocation(result).value mustEqual s"${prefix}continue_url=%2Fdms-submission-admin-frontend%2F$serviceName%2Fsubmissions%2Fsummary"
 
       verify(mockDmsSubmissionConnector, times(0)).summary(any())(any())
     }
