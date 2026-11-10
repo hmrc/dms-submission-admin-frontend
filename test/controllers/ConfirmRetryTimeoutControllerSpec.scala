@@ -19,7 +19,7 @@ package controllers
 import auth.FrontendAuthStubProvider
 import connectors.DmsSubmissionConnector
 import forms.ConfirmRetryTimeoutFormProvider
-import models.{DailySummary, DailySummaryResponse, Done}
+import models.Done
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
@@ -37,11 +37,9 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client.Retrieval.Username
 import uk.gov.hmrc.internalauth.client._
-import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
+import uk.gov.hmrc.internalauth.client.test.StubBehaviour
 import views.html.ConfirmRetryTimeoutView
 
-import java.time.LocalDate
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ConfirmRetryTimeoutControllerSpec
